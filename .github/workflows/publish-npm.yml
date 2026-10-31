@@ -1,0 +1,50 @@
+name: publish-npm
+
+# Publishes the npm module when a version tag is pushed.
+#
+# Scaffold state: intentionally inert until packaging lands via OpenSpec
+# changes (package.json + built dist/). Publishing uses npm trusted
+# publishing (OIDC) — no NPM_TOKEN secret required; the npm package must be
+# configured to trust this repository's workflow on the npm side first.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # npm provenance / trusted publishing
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.64
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: https://registry.npmjs.org
+
+      - name: Build
+        run: |
+          if [ -f scripts/build-wasm.sh ]; then
+            bash scripts/build-wasm.sh
+          else
+            echo "::error::scripts/build-wasm.sh is missing — cannot publish."
+            exit 1
+          fi
+
+      - name: Publish
+        if: ${{ hashFiles('package.json') != '' }}
+        run: npm publish --access public --provenance

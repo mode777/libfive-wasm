@@ -1,0 +1,47 @@
+name: build-wasm
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build wasm artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.64
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # Scaffold guard: the real build lands as an OpenSpec change that adds
+      # scripts/build-wasm.sh (vendored libfive + emcmake + bindings).
+      # Until then this step succeeds with a notice so the pipeline stays green.
+      - name: Build
+        run: |
+          if [ -f scripts/build-wasm.sh ]; then
+            bash scripts/build-wasm.sh
+          else
+            echo "::notice::scripts/build-wasm.sh not present yet — the wasm build lands via an OpenSpec change. Nothing to build."
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libfive-wasm
+          path: dist
+          if-no-files-found: ignore

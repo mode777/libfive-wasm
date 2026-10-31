@@ -1,0 +1,35 @@
+schema: spec-driven
+
+# Project context
+context: |
+  Repo purpose: port the libfive solid-modeling kernel (MPL-2.0 portions only)
+  to WebAssembly via Emscripten and publish it as the npm module `libfive-wasm`.
+  In scope: core C library (libfive.h) + C stdlib. Out of scope: libfive-guile,
+  Python bindings, Studio (all GPL) and the GPU/mpr rendering path.
+  libfive source is vendored at a pinned commit under vendor/libfive.
+  Toolchain: Emscripten pinned to 3.1.64, identical in CI and local builds.
+  Build outputs land in dist/ (gitignored); build scripts live in scripts/.
+  The npm package is ESM-first with generated TypeScript types, targeting
+  browsers and Node LTS.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
