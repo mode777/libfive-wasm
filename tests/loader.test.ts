@@ -26,12 +26,52 @@ vi.mock('../src/loader/glue.js', () => ({
 
 const loadFactoryMock = vi.mocked(loadFactory);
 
-/** A minimal module stub: enough for createRaw's lazy assembly. */
+/**
+ * A minimal module stub: enough for createRaw's lazy assembly and the
+ * eager method-table resolution (design D3) — runtime string helpers,
+ * an opcode lookup that resolves any name, and callable stdlib `csg`
+ * keys under the artifact's underscore-prefixed module keys.
+ */
 function stubModule(): LibfiveModule {
     const buffer = new ArrayBuffer(1024);
     const HEAPU8 = new Uint8Array(buffer);
     const HEAPF32 = new Float32Array(buffer);
-    return { HEAPU8, HEAPF32 } as unknown as LibfiveModule;
+    const strings = new Map<number, string>();
+    let nextPtr = 16;
+    const module = {
+        HEAPU8,
+        HEAPF32,
+        lengthBytesUTF8: (text: string) => new TextEncoder().encode(text).length,
+        stringToUTF8: (text: string, out: number) => {
+            strings.set(out, text);
+        },
+        UTF8ToString: (ptr: number) => strings.get(ptr) ?? '',
+        _malloc: (size: number) => {
+            const ptr = nextPtr;
+            nextPtr += size;
+            return ptr;
+        },
+        _free: () => {},
+        // Resolves any name to a fixed opcode number (the api layer only
+        // requires a non-negative result at construction time).
+        _libfive_opcode_enum: (ptr: number) => (strings.has(ptr) ? 1 : -1),
+        _libfive_opcode_args: () => 0,
+        // stdlib csg section under the artifact's module keys (AD-022).
+        __union: () => 0,
+        _intersection: () => 0,
+        _inverse: () => 0,
+        _difference: () => 0,
+        _offset: () => 0,
+        _clearance: () => 0,
+        _shell: () => 0,
+        _blend_expt: () => 0,
+        _blend_expt_unit: () => 0,
+        _blend_rough: () => 0,
+        _blend_difference: () => 0,
+        _morph: () => 0,
+        _loft: () => 0,
+    };
+    return module as unknown as LibfiveModule;
 }
 
 /** Records the factory argument and resolves with a stub module. */

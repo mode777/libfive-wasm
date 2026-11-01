@@ -9,6 +9,7 @@
  */
 
 import type { LibfiveModule, RawLibfive } from '../ffi/types.js';
+import type { Shape, ShapeClass } from '../api/shape.js';
 
 /**
  * Options for `init()` (api-design.md, AD-007). Unknown behavior for
@@ -39,6 +40,21 @@ export interface Libfive {
     readonly raw: RawLibfive;
     /** Whether lifecycle diagnostics were requested for this instance. */
     readonly debug: boolean;
+    /**
+     * The instance-bound `Shape` class (type + `Shape.fromTree` escape
+     * hatch); the package root also exports the `Shape` base type.
+     */
+    readonly Shape: ShapeClass;
+    /** A new shape returning the X coordinate. */
+    x(): Shape;
+    /** A new shape returning the Y coordinate. */
+    y(): Shape;
+    /** A new shape returning the Z coordinate. */
+    z(): Shape;
+    /** A new constant shape. */
+    constant(value: number): Shape;
+    /** A new free-variable shape (evaluator workflow, AD-003). */
+    var(): Shape;
 }
 
 /** Argument object forwarded to the Emscripten ES6 factory. */

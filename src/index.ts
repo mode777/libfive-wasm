@@ -12,3 +12,13 @@ export { LibfiveError } from './errors.js';
 export { init } from './loader/index.js';
 export type { InitOptions, Libfive } from './loader/index.js';
 export type { RawLibfive } from './ffi/types.js';
+export { Shape } from './api/shape.js';
+export { Mesh } from './api/mesh.js';
+export { exportSTL } from './api/stl.js';
+export type {
+    TFloat,
+    Vec2Arg,
+    Vec3Arg,
+    Region3,
+    MeshOptions,
+} from './api/types.js';

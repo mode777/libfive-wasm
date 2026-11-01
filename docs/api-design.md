@@ -97,6 +97,15 @@ table during the bindings change; anything not listed is reachable through
 | `a.loft(b, zmin, zmax)` | `loft` |
 | `a.loftBetween(b, lower, upper)` | `loft_between` |
 
+`loftBetween` is listed for completeness but arrives with the
+`stdlib-bindings` change: `loft_between` takes two `tvec3` arguments by
+value, which JavaScript cannot call — its pointer-flattened wrapper
+lands with the other struct-by-value stdlib shims (AD-022, see
+`wasm/README.md`). All other `csg`-section methods above are flat and
+ship with the convenience API (the `shape-api` change); the remaining
+sections (top-level constructors, transforms, `text`) arrive generated
+with `stdlib-bindings` (AD-017).
+
 ### Transform methods (stdlib transforms section)
 
 `move(offset)`, `rotateX/rotateY/rotateZ(angle, center?)` (alias
@@ -159,7 +168,8 @@ bindings change.
 ## Meshing
 
 ```ts
-interface MeshOptions { region: Region3; res: number; }  // res ≈ half the smallest feature size
+interface MeshOptions { region: Region3; res: number; }
+// res: the mesher's *inverse* minimum feature size — min_feature = 1/res
 s.mesh(opts): Mesh            // via libfive_tree_render_mesh_st (AD-09: synchronous)
 // convenience: s.mesh(min, max, res)
 
@@ -176,10 +186,16 @@ interface Mesh {
 }
 ```
 
-`res` follows libfive semantics — *approximately half the model's smallest
-feature size; subdivision halts when all region sides are below it* — it is
-**not** a voxel count. The docs (README + JSDoc) repeat this prominently; it
-is the single most common libfive misuse.
+`res` follows the pinned kernel's actual semantics: `render_mesh_st`
+builds its mesher settings with `min_feature = 1/res`, so `res` is the
+**inverse of the minimum feature size** — larger values mesh finer (a
+unit sphere in a 2.5-wide region: res 16 ≈ 12k vertices, res 4 ≈ 800,
+res 1 ≈ 60). It is **not** a voxel count and not a feature size itself,
+and a value so small that `1/res` exceeds the region size produces an
+empty mesh (zero triangles). This corrects the historical libfive
+docstring wording ("half the smallest feature size"), which the pinned
+implementation does not follow; the README + JSDoc repeat the corrected
+rule prominently (the single most common misuse).
 
 STL export (AD-018):
 
@@ -226,7 +242,7 @@ import { writeFileSync } from 'node:fs';
 
 const libfive = await init();
 const part = libfive.sphere(1).difference(libfive.box([2, 1, 1]));
-const mesh = part.mesh({ min: [-2, -2, -2], max: [2, 2, 2], res: 0.02 });
+const mesh = part.mesh({ min: [-2, -2, -2], max: [2, 2, 2], res: 16 });
 writeFileSync('part.stl', Buffer.from(exportSTL(mesh)));
 ```
 
@@ -237,7 +253,7 @@ const libfive = await init();
 const blob = libfive.sphere(1, [-0.3, 0, 0])
   .blend(libfive.sphere(0.8, [0.5, 0.2, 0]), 0.4)
   .blend(libfive.cylinder(0.4, 2).rotateX(Math.PI / 2), 0.3);
-const mesh = blob.mesh({ min: [-3, -3, -3], max: [3, 3, 3], res: 0.05 });
+const mesh = blob.mesh({ min: [-3, -3, -3], max: [3, 3, 3], res: 10 });
 geometry.setAttribute('position', new THREE.BufferAttribute(mesh.copyVerts(), 3));
 geometry.setIndex(new THREE.BufferAttribute(mesh.copyTris(), 1));
 ```

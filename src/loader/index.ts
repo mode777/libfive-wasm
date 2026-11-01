@@ -9,7 +9,7 @@
  */
 
 import { LibfiveError } from '../errors.js';
-import { createRaw } from '../ffi/raw.js';
+import { createInstance } from '../api/instance.js';
 import type { LibfiveModule } from '../ffi/types.js';
 import { loadFactory } from './glue.js';
 import type {
@@ -86,7 +86,7 @@ export async function initFromFactory(
         });
     }
 
-    return { raw: createRaw(module), debug: options.debug ?? false };
+    return createInstance(module, options.debug ?? false);
 }
 
 /**
@@ -99,7 +99,9 @@ export async function initFromFactory(
  *
  * The returned object exposes `raw`, the typed C namespace — an advanced
  * escape hatch beneath the convenience API; it is semver-relevant
- * (AD-011) — and `debug`, whether lifecycle diagnostics were requested.
+ * (AD-011) — the shape factories (`x`, `y`, `z`, `constant`, `var`), the
+ * instance-bound `Shape` class, and `debug`, whether lifecycle
+ * diagnostics were requested.
  *
  * @example
  * ```ts
