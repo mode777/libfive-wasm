@@ -39,11 +39,13 @@ jobs:
           restore-keys: |
             libfive-wasm-${{ runner.os }}-
 
-      - name: Build and test
-        run: bash scripts/build-wasm.sh
-
+      # Installed before the build so build-wasm.sh runs the golden mesh
+      # suite against the artifact it just linked (AD-025).
       - name: Install package dev dependencies
         run: npm ci
+
+      - name: Build and test
+        run: bash scripts/build-wasm.sh
 
       - name: Package test suite
         run: npm test

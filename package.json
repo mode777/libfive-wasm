@@ -10,6 +10,8 @@
   },
   "scripts": {
     "test": "vitest run",
+    "golden": "vitest run tests/golden.test.ts",
+    "golden:capture": "node scripts/capture-goldens.mjs",
     "check": "tsc --noEmit",
     "gen:stdlib": "node scripts/gen-stdlib-ts.mjs && node scripts/gen-stdlib-shims.mjs",
     "lint": "eslint .",

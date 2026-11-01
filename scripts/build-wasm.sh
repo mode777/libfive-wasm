@@ -11,6 +11,10 @@
 #   scripts/build-wasm.sh --debug     unoptimized build with assertions
 #   scripts/build-wasm.sh --no-tests  skip the Node suites (local iteration)
 #   scripts/build-wasm.sh --jobs N    compile parallelism (default: nproc)
+#
+# The release build also runs the golden mesh suite when dev dependencies are
+# installed (`npm ci`). Goldens are captured only from the release artifact
+# (AD-025); debug builds are not compared.
 
 set -euo pipefail
 
@@ -276,6 +280,20 @@ if [[ "$RUN_TESTS" == 1 ]]; then
     log "running interval test"
     node "$SCRIPT_DIR/test-interval.mjs" \
         --glue "$OUT_DIR/libfive.js" --wasm "$OUT_DIR/libfive.wasm"
+
+    # Golden meshes are captured from the release artifact only (AD-025);
+    # the debug flavor is for local investigation and is not compared.
+    if [[ "$FLAVOR" == release ]]; then
+        if [[ -x "$REPO_ROOT/node_modules/.bin/vitest" ]]; then
+            log "running golden mesh test"
+            (
+                cd "$REPO_ROOT"
+                ./node_modules/.bin/vitest run tests/golden.test.ts
+            )
+        else
+            warn "golden suite skipped (dev dependencies not installed; run npm ci)"
+        fi
+    fi
 else
     warn "tests skipped (--no-tests); CI never uses this flag"
 fi

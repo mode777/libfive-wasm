@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "scene": "blended-union",
+  "region": {
+    "min": [
+      -2.5,
+      -2.5,
+      -2.5
+    ],
+    "max": [
+      2.5,
+      2.5,
+      2.5
+    ]
+  },
+  "res": 10,
+  "vertCount": 3909,
+  "triCount": 7812,
+  "hashedComponents": 6144,
+  "vertexHash": "df739d370f7e99a2150cd62eb73debeccafe131f2cd5ba2bc05cff9b35a13a1b",
+  "vendorCommit": "918387a9220dbac2f7ab32fb35e274c6794439cf"
+}

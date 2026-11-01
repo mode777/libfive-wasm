@@ -41,6 +41,7 @@ Decisions marked 🔒 were explicitly locked with the maintainer on
 | AD-022 | Wasm artifact mechanics: static archives, explicit export manifest with per-symbol link roots, inline single-worker meshing, `_st`-only meshing, frozen core ABI | Accepted |
 | AD-023 | Software interval rounding implementation: fenv-free Boost interval inclusion plus a double-evaluate/outward-`nextafter` policy, gated by an interval acceptance suite | Accepted |
 | AD-024 | Generated flat C stdlib shims from the same header parser as the TypeScript surface, checked in and drift-checked by the build | Accepted |
+| AD-025 | Golden mesh verification: public-API canonical scenes, exact count + float32-prefix hash goldens, capture-only workflow, one-ulp fault injection | Accepted |
 
 ---
 
@@ -393,3 +394,35 @@ diff and a stale check cannot ship a divergent surface. Costs: ~80 tiny
 exported wrappers, a generated C source in the artifact, and a build step that
 must run after vendoring. This implements AD-017 in full, relies on AD-022's
 export-list mechanics and supersedes nothing.
+
+## AD-025 — Golden mesh verification {#ad-025}
+
+**Context.** The smoke suite proves the artifact links and meshes, and the
+interval suite proves bounds are conservative, but neither detects a reviewed
+build being replaced by one whose mesher output drifted. AD-015's software
+rounding, the vendor pin (AD-016), the pinned Boost/Eigen headers (AD-021) and
+the Emscripten version (AD-013) can all change vertex placement or topology
+without breaking those suites; the gap had to close before packaging froze the
+artifact.
+
+**Decision.** Checked-in goldens under `tests/goldens/` record, per canonical
+scene (sphere, gyroid, blended union, text), the mesh vertex/triangle counts
+and a SHA-256 over the first 6144 float32 vertex components. The scenes are
+built through the public `Shape`/stdlib API with fixed regions and resolutions.
+Normal test and build runs are read-only and fail on any count or prefix-hash
+difference, including a missing or malformed golden. Goldens are rewritten only
+by the explicit capture command (`npm run golden:capture`) against a reviewed
+release artifact; changing the vendor pin, Boost/Eigen, interval policy, golden
+scene definition or toolchain requires a fresh capture and review. The harness
+ships a fault-injection self-test: a real sphere mesh is perturbed by one
+float32 ulp and the comparator must reject it, demonstrating sensitivity to the
+drift an undersized interval policy produces. The release build and CI run the
+golden suite against the artifact they just produced (`build-wasm.sh`,
+`build-wasm.yml`); debug builds are not compared.
+
+**Consequences.** Mesh output becomes a reviewed artifact with exact
+comparison and no tolerance to loosen; a subtle rounding regression now fails
+the build instead of shipping. Goldens are tied to the pinned toolchain and
+inputs, so a bump is a deliberate capture-and-review event, and the corpus
+stays small enough to read in a diff. This implements the verification half of
+AD-015 and supports AD-013/AD-022; it supersedes nothing.

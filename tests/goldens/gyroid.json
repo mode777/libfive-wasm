@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "scene": "gyroid",
+  "region": {
+    "min": [
+      -2,
+      -2,
+      -2
+    ],
+    "max": [
+      2,
+      2,
+      2
+    ]
+  },
+  "res": 8,
+  "vertCount": 6277,
+  "triCount": 11700,
+  "hashedComponents": 6144,
+  "vertexHash": "4a8f6aff5dbac0ede720871c270ec71f71dc9a58f9333a8fa3fc7da615712490",
+  "vendorCommit": "918387a9220dbac2f7ab32fb35e274c6794439cf"
+}

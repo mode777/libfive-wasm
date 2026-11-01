@@ -81,6 +81,7 @@ locked in [`docs/`](docs/) and every implementation change must conform:
 | `scripts/fetch-deps.sh` | Downloads and SHA-256-verifies the pinned Eigen + Boost headers into `build/deps/` |
 | `scripts/build-wasm.sh` | Builds `dist/libfive.wasm` + ES6 glue with Emscripten 3.1.64 and runs the Node acceptance suites |
 | `scripts/test-smoke.mjs` / `scripts/test-interval.mjs` | Artifact smoke test and software-interval-rounding acceptance test (AD-015) |
+| `scripts/capture-goldens.mjs`, `tests/goldens/` | Golden mesh capture command and checked-in scene results (AD-025) |
 | `vendor/` | Pin record (`VENDOR.md`, `libfive.lock`), carried patches, MPL-2.0 text, and the generated `libfive/` tree |
 | `.opencode/`, `.agents/` | OpenSpec commands and skills for coding agents |
 | `.github/workflows/build-wasm.yml` | Builds, tests and uploads the wasm artifact on every push/PR |
@@ -102,6 +103,21 @@ The pin, trim list, digest, and bump procedure live in `vendor/VENDOR.md`.
 verification server), where `source /opt/emsdk/emsdk_env.sh` provides it. Use
 `--debug` for an unoptimized flavor under `dist/debug/`; `--no-tests` skips the
 Node suites during local iteration.
+
+After a release build (and `npm ci`), verify mesh output and the package suite:
+
+```sh
+npm run golden           # compare the four canonical scenes to tests/goldens/
+npm test                 # full package suite, including goldens + fault injection
+```
+
+Goldens are captured only from a reviewed release artifact, never edited by
+hand. When the vendor pin, Boost/Eigen pins, interval policy, Emscripten version
+or a scene definition changes, recapture and review the JSON diff:
+
+```sh
+npm run golden:capture   # prints the pin/digest, rewrites tests/goldens/*.json
+```
 
 ## License
 

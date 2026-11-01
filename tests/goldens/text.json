@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "scene": "text",
+  "region": {
+    "min": [
+      -1.5,
+      -1.5,
+      -1.5
+    ],
+    "max": [
+      1.5,
+      1.5,
+      1.5
+    ]
+  },
+  "res": 10,
+  "vertCount": 793,
+  "triCount": 1516,
+  "hashedComponents": 2379,
+  "vertexHash": "6c62a19c26e0dc8c7c690ae3b6729c19c4d3752f24cd9b7dd65a1fd818b2d81c",
+  "vendorCommit": "918387a9220dbac2f7ab32fb35e274c6794439cf"
+}

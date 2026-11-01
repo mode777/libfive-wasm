@@ -25,7 +25,9 @@ scripts/build-wasm.sh            ← single entry point CI calls
   3. emcmake cmake -C scripts/emcache.cmake ...  →  static libfive archives
   4. emcc link: core + stdlib + wasm/shim.c + wasm/stdlib_shim.c
      →  dist/libfive.wasm + ES6 glue
-  5. node smoke + interval suites against the artifact (AD-015 acceptance)
+  5. node smoke + interval suites against the artifact (AD-015 acceptance),
+     then the golden mesh suite for release builds when dev dependencies are
+     installed (AD-025)
   6. print the artifact SHA-256 and size
 ```
 
@@ -203,8 +205,12 @@ configured standalone (`LIBFIVE_BUILD_FROM_ROOT` check). Therefore:
   indices, radius sanity, string round-trip, export-table presence) and
   `scripts/test-interval.mjs` (the AD-015 acceptance suite). Both instantiate
   the ES6 factory with `wasmBinary`, so they do not depend on glue path
-  resolution. The package's own vitest suite (`npm test`: loader option
-  handling, raw-namespace manifest parity, kernel flows) runs against the
+  resolution. Release builds additionally run the golden mesh suite when
+  `node_modules/.bin/vitest` is present; CI installs dev dependencies before
+  the build so the gate is always active (AD-025). Debug builds skip the
+  golden comparison because they are for local investigation, not shipment.
+  The package's own vitest suite (`npm test`: loader option handling,
+  raw-namespace manifest parity, kernel flows, golden meshes) runs against the
   same artifact after the build, locally and in CI.
 - `build-wasm.sh --host=native` remains a planned convenience for the golden
   test workflow; it is not implemented in this change.
@@ -213,10 +219,27 @@ configured standalone (`LIBFIVE_BUILD_FROM_ROOT` check). Therefore:
   `scripts/deps.lock`, then runs the script, reports the digest/size in the
   job summary and uploads `dist/`.
 
-## Golden-image / mesh verification
+## Golden mesh verification (AD-025)
 
-- Canonical scenes (sphere, gyroid, blended union) are meshed in Node from
-  the built package; vertex/triangle counts plus a hash of first-N vertices
-  are compared against checked-in goldens.
-- Goldens are (re)captured on the verification server when the vendor pin
-  or interval policy changes, never edited by hand.
+- Canonical scenes (sphere, gyroid, blended union, text) are built through the
+  public `Shape`/stdlib API in `tests/support/golden.ts`, meshed with fixed
+  regions/resolutions, and compared against `tests/goldens/<scene>.json`:
+  vertex count, triangle count, and a SHA-256 over the first 6144 float32
+  vertex components. Comparison is exact — no tolerance knob exists.
+- Normal runs are read-only; a missing or malformed golden fails. Goldens are
+  written only by `npm run golden:capture`
+  (`scripts/capture-goldens.mjs`), which requires a release `dist/libfive.wasm`
+  and prints the vendor pin and artifact digest. Review the resulting JSON
+  diff like code.
+- Recapture is required when the vendor pin, Boost/Eigen pins, interval
+  policy, Emscripten version or a scene definition changes; never hand-edit a
+  golden. Captures are taken on the verification server from a freshly built
+  release artifact.
+- Fault injection: the suite perturbs one vertex component of a real sphere
+  mesh by one float32 ulp and asserts that the comparator rejects it. This is
+  the sensitivity proof for interval-policy regressions; `npm test` and the
+  release build run it with the rest of the golden suite.
+- The release build runs the golden suite against the artifact it just linked
+  (after the smoke and interval suites) when dev dependencies are installed;
+  `build-wasm.yml` installs them before building, so CI always golden-tests
+  the artifact it uploads.

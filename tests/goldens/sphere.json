@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "scene": "sphere",
+  "region": {
+    "min": [
+      -1.5,
+      -1.5,
+      -1.5
+    ],
+    "max": [
+      1.5,
+      1.5,
+      1.5
+    ]
+  },
+  "res": 12,
+  "vertCount": 8601,
+  "triCount": 17196,
+  "hashedComponents": 6144,
+  "vertexHash": "a0efb58d91cfbd9f738eb5b401b95cfec5aaf75f04d6b6aa06f5fd7ee452eb8a",
+  "vendorCommit": "918387a9220dbac2f7ab32fb35e274c6794439cf"
+}
