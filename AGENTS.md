@@ -17,8 +17,14 @@ OpenSpec changes**.
 - Git: work directly on `main` — commit each change there and push. Do not
   create feature branches or pull requests per change; CI
   (`build-wasm.yml`) runs on every push to `main` and is the gate.
-- Keep CI green. Both workflows are intentional scaffolds that no-op gracefully
-  until the real build/publish steps land via changes — preserve that property.
+- Keep CI green. `build-wasm.yml` is the live quality gate: on every push
+  and PR it builds the real artifact (vendoring + deps from scratch on a
+  clean runner), runs the smoke, interval and package test suites, and
+  uploads `dist/`. `publish-npm.yml` remains tag-gated and effectively
+  inert — `package.json` is still `private: true` and npm-side trusted
+  publishing is activated with `first-release` — until `npm-packaging`
+  and `first-release` finalize the publishable manifest. Preserve both
+  properties.
 
 ## Project constraints (bind every change)
 
