@@ -19,6 +19,11 @@ OpenSpec changes**.
 
 ## Project constraints (bind every change)
 
+- **Design baseline:** the locked architecture and decisions in `docs/`
+  (`decisions.md` is the ADR log; `architecture.md`, `build-system.md`,
+  `api-design.md`, `packaging.md` define the target). Implementation changes
+  must conform; changing a decision requires updating the ADR in the same
+  change.
 - **Scope:** port only the MPL-2.0 portions of libfive — the core C library
   (`libfive.h`) and C stdlib (`libfive/stdlib/stdlib.h`). Never vendor, build, or
   link `libfive-guile`, the Python bindings, or Studio (GPL-2+).
@@ -28,8 +33,9 @@ OpenSpec changes**.
 - **Toolchain:** Emscripten `3.1.64`, identical in CI and local builds.
 - **Artifacts:** build outputs go to `dist/` (gitignored); build logic lives in
   `scripts/`.
-- **Package:** ESM-first, generated TypeScript types, targets modern browsers and
-  Node LTS.
+- **Package:** one npm package `libfive-wasm` — ESM-only, async `init()`,
+  convenience `Shape` API + raw C namespace, generated stdlib TypeScript types,
+  targets modern browsers and Node LTS (≥18).
 - **Known porting hazards** (address them in design docs, not improvisation):
   - `boost::numeric::interval` must use software rounding — WASM has no
     `fesetround`; hardware rounding detection fails under Emscripten.
@@ -53,8 +59,9 @@ OpenSpec changes**.
 | Path | Contents |
 |---|---|
 | `openspec/` | Specs and change proposals — the source of truth for what exists and what is planned |
+| `docs/` | Locked design baseline: ADR log, architecture, build system, API design, packaging, roadmap of OpenSpec changes |
 | `.opencode/`, `.agents/` | OpenSpec agent commands and skills |
 | `.github/workflows/` | `build-wasm.yml` (build artifact), `publish-npm.yml` (tag-gated publish) |
-| `vendor/` *(planned)* | Pinned libfive source |
-| `scripts/` *(planned)* | Emscripten build scripts |
+| `vendor/` | Pin record (`libfive.lock`, `VENDOR.md`), carried patches, MPL-2.0 text; `libfive/` is generated (gitignored) by `scripts/vendor-libfive.sh` |
+| `scripts/` | Vendoring + dependency fetch now; Emscripten build scripts land via the next change |
 | `src/` *(planned)* | JS/TS bindings |

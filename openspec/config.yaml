@@ -3,33 +3,72 @@ schema: spec-driven
 # Project context
 context: |
   Repo purpose: port the libfive solid-modeling kernel (MPL-2.0 portions only)
-  to WebAssembly via Emscripten and publish it as the npm module `libfive-wasm`.
+  to WebAssembly via Emscripten and publish it as ONE npm module `libfive-wasm`
+  containing the compiled .wasm, a convenience JS/TS API (Shape class with
+  chainable methods, modeled on libfive's Python bindings, plus the raw C
+  namespace as an advanced escape hatch), and generated TypeScript types.
+  Targets modern browsers and Node >= 18 (ESM-only, async init()).
   In scope: core C library (libfive.h) + C stdlib. Out of scope: libfive-guile,
   Python bindings, Studio (all GPL) and the GPU/mpr rendering path.
-  libfive source is vendored at a pinned commit under vendor/libfive.
+  libfive source is vendored at a pinned commit under vendor/libfive (patches
+  carried in vendor/patches, never hand-edited).
   Toolchain: Emscripten pinned to 3.1.64, identical in CI and local builds.
   Build outputs land in dist/ (gitignored); build scripts live in scripts/.
-  The npm package is ESM-first with generated TypeScript types, targeting
-  browsers and Node LTS.
+  Single-threaded kernel (libfive_tree_render_mesh_st); portable wasm baseline
+  (no threads, no SIMD); boost::numeric::interval must use software rounding.
+  The LOCKED DESIGN BASELINE lives in docs/: decisions.md is the ADR log
+  (AD-001..AD-020); architecture.md, build-system.md, api-design.md and
+  packaging.md define the target; roadmap.md sequences the OpenSpec changes
+  (vendor-libfive, wasm-build-pipeline, js-package-core, shape-api,
+  stdlib-bindings, golden-verification, npm-packaging, first-release).
+  Architecture decisions are documented in
+  docs/decisions.md and kept in sync with the specs: every change that makes,
+  alters, or reverses a decision updates the ADR log in the same change, and
+  spec deltas must not contradict Accepted ADRs.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always state what is out of scope
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+# Per-artifact rules
+rules:
+  proposal:
+    - State explicitly whether the change introduces, alters, or reverses any
+      architecture/design decision, citing the ADR IDs in docs/decisions.md
+      it implements or supersedes (e.g. "implements AD-004").
+    - Do not propose behavior that contradicts an Accepted ADR in
+      docs/decisions.md; a contradiction requires superseding that ADR within
+      this change first.
+  design:
+    - Ground the design in the Accepted ADRs in docs/decisions.md and cite
+      ADR IDs (e.g. AD-004) instead of restating them.
+    - Any new or changed decision must add or update an ADR entry in
+      docs/decisions.md as part of this change — new sequential ID (never
+      reuse), status Accepted, plus Superseded-by/Supersedes links when
+      replacing an old decision; never silently edit an existing ADR's
+      substance.
+    - When the change alters anything docs/architecture.md,
+      docs/build-system.md, docs/api-design.md, or docs/packaging.md
+      describe, update those docs in the same change.
+  specs:
+    - Specs describe observable behavior and requirements; the rationale and
+      trade-offs live in ADRs — reference ADR IDs where that context helps.
+  tasks:
+    - Include an explicit task to update docs/decisions.md whenever the change
+      adds or supersedes an ADR.
+    - Include a task to keep the affected docs/ baseline files consistent
+      with what is actually implemented.
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+# Per-operation guidance
+operations:
+  apply:
+    guidance:
+      - Before finishing, verify docs/decisions.md reflects the decisions
+        actually implemented — ADR added, updated, or superseded within this
+        change if any decision changed; IDs stable and never reused.
+      - Verify the docs/ baseline files touched by the change were updated
+        alongside the implementation, not left describing an older design.
+  archive:
+    guidance:
+      - Before archiving, check the synced specs against docs/decisions.md —
+        no requirement may contradict an Accepted ADR. If drift is found,
+        fix it within this change (adjust the spec delta or supersede the
+        ADR) before archiving.
+      - Confirm the ADR status table in docs/decisions.md is current (new
+        entries listed, superseded ones marked with links).

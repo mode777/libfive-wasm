@@ -1,0 +1,49 @@
+libfive-wasm carried patch 0002: skip unbuilt optional subdirectories
+
+scripts/vendor-libfive.sh trims the GPL-2+ Studio/Guile/Python trees and
+upstream's GTest suite out of the vendored source (AD-001). CMake would still
+try to enter them when the corresponding options are enabled, which fails on a
+missing directory. This patch removes those add_subdirectory() calls so only
+the kernel and C stdlib targets are configured; install rules are untouched.
+
+Serves AD-001 and AD-016. Do not edit the vendored tree; edit this patch and
+bump patch_digest in vendor/libfive.lock.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -205,9 +205,7 @@
+ # Set a flag to detect the case where users run CMake in the wrong directory
+ set(LIBFIVE_BUILD_FROM_ROOT true)
+ 
+-# Always build the kernel and test suite
++# libfive-wasm: only the kernel and C stdlib targets are configured. The
++# test suite, Guile bindings, Python bindings and Studio are not vendored
++# (GPL-2+ or unused), so no optional subdirectories are entered.
+ add_subdirectory(libfive)
+-
+-if(BUILD_STUDIO_APP AND (STUDIO_WITH_GUILE OR STUDIO_WITH_PYTHON) AND QtCore_FOUND)
+-    add_subdirectory(studio)
+-endif()
+--- a/libfive/CMakeLists.txt
++++ b/libfive/CMakeLists.txt
+@@ -13,17 +13,9 @@
+ add_subdirectory(src)
+ add_subdirectory(stdlib)
+ 
+-if (BUILD_TESTS)
+-  add_subdirectory(test)
+-endif(BUILD_TESTS)
+-
+-if (BUILD_GUILE_BINDINGS AND GUILE_FOUND)
+-  add_subdirectory(bind/guile)
+-endif(BUILD_GUILE_BINDINGS AND GUILE_FOUND)
+-
+-if (BUILD_PYTHON_BINDINGS AND Python3_FOUND)
+-  add_subdirectory(bind/python)
+-endif()
++# libfive-wasm: upstream's test suite, Guile bindings and Python bindings are
++# not vendored (GPL-2+ or unused by the wasm artifact), so their
++# add_subdirectory() calls are intentionally absent (AD-001).
+ 
+ if(UNIX AND NOT(APPLE))
+     set(DEST_DIR "${CMAKE_INSTALL_PREFIX}")

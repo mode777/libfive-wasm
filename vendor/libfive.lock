@@ -1,0 +1,20 @@
+# vendor/libfive.lock — upstream source pin for libfive-wasm (AD-016, AD-021).
+#
+# Machine-readable companion to vendor/VENDOR.md. scripts/vendor-libfive.sh is
+# the only consumer; it reads this file as flat `key=value` lines and refuses to
+# run when a required key is missing or a value is malformed.
+#
+# Bumping the pin: edit commit/commit_date/archive_url/archive_sha256 (and the
+# `patches` list if the patch set changes), run scripts/vendor-libfive.sh
+# --force, then update the expected tree digest in vendor/VENDOR.md. See the
+# pin-bump procedure there.
+
+repository_url=https://github.com/libfive/libfive
+commit=918387a9220dbac2f7ab32fb35e274c6794439cf
+commit_date=2026-10-16
+archive_url=https://codeload.github.com/libfive/libfive/tar.gz/918387a9220dbac2f7ab32fb35e274c6794439cf
+archive_sha256=05badee75864c8ad13807a4dea40339018db9cfb14f0fd61de0b691472c4e89e
+archive_size=918008
+archive_root=libfive-918387a9220dbac2f7ab32fb35e274c6794439cf
+patches=0001-emscripten-host-guards.patch 0002-skip-optional-subdirectories.patch 0003-header-only-deps.patch 0004-static-library-targets.patch 0005-single-threaded-mesher.patch 0006-software-interval-rounding.patch
+patch_digest=bb46143f77e393fd04954bf03469abe21ebc9342be82735856849aeea427a9c3
