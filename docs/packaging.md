@@ -72,21 +72,36 @@ CI runs it after the package suite.
 - Deprecations: mark with `@deprecated` JSDoc for at least one minor
   release before removal.
 
-## Release & publishing flow (AD-020)
+## Release & publishing flow (AD-020, AD-027)
 
 1. `build-wasm.yml` runs on every push/PR: builds `dist/` via
-   `scripts/build-wasm.sh`, runs the Node smoke + golden mesh tests, uploads
-   the artifact. This is the quality gate; it must stay green.
-2. Publishing is **tag-gated**: push a `v*` tag matching `package.json`.
-3. `publish-npm.yml` builds, then `npm publish --access public --provenance`
-   using **npm trusted publishing (OIDC)** — no `NPM_TOKEN`:
-   - requires the npm package to be configured to trust this repo's
-     workflow once, on the npm side, with the `npm` GitHub environment
-     (already referenced by the workflow);
-   - provenance statements come for free from the OIDC token.
-4. Release checklist (in the release change): update CHANGELOG, bump
-   `package.json`, tag `vX.Y.Z`, let CI publish, verify
-   `npm view libfive-wasm` and the provenance attestation.
+   `scripts/build-wasm.sh` (artifact, package entry, declarations), runs the
+   smoke, interval, golden, package and consumer tests, uploads the artifact.
+   This is the quality gate; it must stay green.
+2. Publishing is **tag-gated and version-checked**: `publish-npm.yml` fails
+   unless the pushed tag is exactly `v<package.json version>`, then installs
+   dev dependencies, builds through `scripts/build-wasm.sh`, and runs the
+   package + consumer suites before publishing.
+3. `npm publish --access public --provenance` uses **npm trusted publishing
+   (OIDC)** — no `NPM_TOKEN`. The one manual prerequisite is configuring the
+   npm package to trust this repository's publish workflow and the `npm`
+   GitHub environment **on the npm side**. Until that exists, the publish step
+   fails with a trust/auth error; no tag should be pushed.
+4. Release checklist (first release: `0.1.0`):
+   - confirm `build-wasm.yml` is green on `main` and the tree is reviewed;
+   - update `CHANGELOG.md`, set `package.json` version, drop `private` and keep
+     `publishConfig` public/provenance;
+   - complete the npm-side trust prerequisite (step 3);
+   - commit, create an annotated `vX.Y.Z` tag and push it;
+   - let `publish-npm.yml` publish, then run
+     `node scripts/verify-release.mjs X.Y.Z` — it checks the registry version,
+     `dist.integrity`, provenance attestation, and installs that exact version
+     into a clean project to mesh and export STL;
+   - confirm `npm view libfive-wasm@X.Y.Z`, record the wasm SHA-256, vendor pin
+     and tarball integrity in the release notes.
+5. Rollback: `npm unpublish libfive-wasm@X.Y.Z` within the registry window (or
+   `npm deprecate` after it), then publish a patched version; use the recorded
+   digest/pin to prove the replacement. Never move a published tag.
 
 ## Artifact provenance & traceability
 

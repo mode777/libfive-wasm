@@ -1,7 +1,6 @@
 {
   "name": "libfive-wasm",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
   "description": "WebAssembly port of the libfive solid-modeling kernel (MPL-2.0 portions): async init(), typed raw C namespace, convenience Shape API.",
   "keywords": [
@@ -40,6 +39,10 @@
     "LICENSE"
   ],
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "test": "vitest run",
     "test:package": "node scripts/test-package.mjs",

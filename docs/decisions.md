@@ -43,6 +43,7 @@ Decisions marked 🔒 were explicitly locked with the maintainer on
 | AD-024 | Generated flat C stdlib shims from the same header parser as the TypeScript surface, checked in and drift-checked by the build | Accepted |
 | AD-025 | Golden mesh verification: public-API canonical scenes, exact count + float32-prefix hash goldens, capture-only workflow, one-ulp fault injection | Accepted |
 | AD-026 | Package artifact: one bundled ESM entry with the inlined Emscripten factory, declarations beside it, and tarball consumer verification | Accepted |
+| AD-027 | Release procedure: changelog + version/tag gate, trusted-publishing prerequisite, post-publish registry/attestation and clean-install verification | Accepted |
 
 ---
 
@@ -463,3 +464,35 @@ dependencies, the entry is generated rather than a checked-in file, and the
 Emscripten glue's Node-only `module` import remains external (guarded at
 runtime, externalized by browser bundlers). The version, CHANGELOG, tag and
 npm publish remain the release change.
+
+## AD-027 — Release procedure and verification {#ad-027}
+
+**Context.** AD-020 fixes tag-gated publishing with provenance, but the first
+release also needs a single source for its version and story, a guard against
+publishing a mismatched tag, and a way to prove the registry package — not just
+the local tarball — installs and meshes. npm trusted publishing is configured
+on the npm side and cannot be created from this repository.
+
+**Decision.** The release is a commit with a `CHANGELOG.md` section, a
+matching `package.json` version (`0.1.0` for the first release), and an
+annotated `v<version>` tag. `package.json` drops `private` and declares
+`publishConfig` public access plus provenance. `publish-npm.yml` fails unless
+the pushed tag equals `v<package.json version>`, installs dev dependencies,
+builds through `scripts/build-wasm.sh`, runs the package and consumer suites,
+and only then publishes with `--access public --provenance` under the `npm`
+environment. After a successful publish, `scripts/verify-release.mjs
+[version]` checks the registry version, tarball integrity and provenance
+attestation and installs that exact version into a clean project to mesh and
+export STL. The npm-side trust relationship (repository/workflow plus `npm`
+environment) is the explicit manual prerequisite; no tag is pushed until it
+exists. Rollback is `npm unpublish` within the registry window (or
+`npm deprecate` after it) followed by a patch release, with the vendor pin,
+wasm digest and tarball integrity recorded for comparison.
+
+**Consequences.** A tag cannot publish a stale or mismatched tree, and a
+release is only complete when registry metadata, provenance and a clean
+install all pass. The changelog and manifest are the reviewed release record.
+Costs: the publish workflow is slower (full build + suites), the maintainer
+must activate trust before the first tag, and post-publish verification needs
+network access. This implements AD-020 and supports AD-012; it supersedes
+nothing.

@@ -1,11 +1,10 @@
 name: publish-npm
 
-# Publishes the npm module when a version tag is pushed.
+# Publishes the npm module when a version tag matching package.json is pushed.
 #
-# Scaffold state: intentionally inert until packaging lands via OpenSpec
-# changes (package.json + built dist/). Publishing uses npm trusted
-# publishing (OIDC) — no NPM_TOKEN secret required; the npm package must be
-# configured to trust this repository's workflow on the npm side first.
+# Publishing uses npm trusted publishing (OIDC) — no NPM_TOKEN secret. The npm
+# package must be configured on the npm side to trust this repository's
+# workflow and the `npm` GitHub environment before the first tag is pushed.
 
 on:
   push:
@@ -36,6 +35,18 @@ jobs:
           node-version: '24'
           registry-url: https://registry.npmjs.org
 
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match package.json ${version}"
+            exit 1
+          fi
+
+      - name: Install dev dependencies
+        run: npm ci
+
       - name: Build
         run: |
           if [ -f scripts/build-wasm.sh ]; then
@@ -44,6 +55,12 @@ jobs:
             echo "::error::scripts/build-wasm.sh is missing — cannot publish."
             exit 1
           fi
+
+      - name: Package test suite
+        run: npm test
+
+      - name: Consumer package test
+        run: npm run test:package
 
       - name: Publish
         if: ${{ hashFiles('package.json') != '' }}

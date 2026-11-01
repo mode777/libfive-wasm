@@ -33,7 +33,7 @@ Change names below are the intended kebab-case names for
 | 5 | `stdlib-bindings` | 3 · Stdlib & conveniences | 4 | Done |
 | 6 | `golden-verification` | 4 · Verify & package | 5 | Done |
 | 7 | `npm-packaging` | 4 · Verify & package | 6 | Done |
-| 8 | `first-release` | 5 · Ship | 7 | Planned |
+| 8 | `first-release` | 5 · Ship | 7 | Repo ready — publish pending npm trust |
 
 ---
 
@@ -195,6 +195,12 @@ stdlib.
 - **Implements:** AD-020 (and AD-012 via LICENSE files in the tarball).
 - **Done when:** the published package installs and runs in a clean Node
   and browser project.
+
+**Current state:** the repository side is complete — `CHANGELOG.md`, version
+`0.1.0`, publishable manifest, tag/version gate and
+`scripts/verify-release.mjs`. The actual `v0.1.0` publish is pending the manual
+npm trusted-publishing setup (repository/workflow trust plus the `npm`
+environment) described in `docs/packaging.md`; no tag has been pushed.
 
 ## Later — unscheduled candidates
 

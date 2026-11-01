@@ -8,6 +8,8 @@ dependencies: the compiled `.wasm`, a chainable `Shape` API modeled on the
 Python bindings, the full C standard library, generated TypeScript types, and
 the raw C namespace as an escape hatch.
 
+**Current release: `0.1.0`** (see [CHANGELOG.md](CHANGELOG.md)).
+
 - **Build f-rep trees in code.** `sphere(1).difference(box([2, 1, 1]))`,
   blends, offsets, shells, morphs, lofts, transforms, arrays and text — every
   scalar slot also accepts a plain number.
@@ -189,6 +191,7 @@ npm run lint             # ESLint
 npm run golden           # checked-in canonical mesh goldens
 npm test                 # full package suite (incl. goldens + fault injection)
 npm run test:package     # pack, install and build a Vite consumer
+node scripts/verify-release.mjs 0.1.0   # post-publish registry/attestation check
 ```
 
 Golden meshes are captured only from a reviewed release artifact, never edited
