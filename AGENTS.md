@@ -19,12 +19,13 @@ OpenSpec changes**.
   (`build-wasm.yml`) runs on every push to `main` and is the gate.
 - Keep CI green. `build-wasm.yml` is the live quality gate: on every push
   and PR it builds the real artifact (vendoring + deps from scratch on a
-  clean runner), runs the smoke, interval and package test suites, and
-  uploads `dist/`. `publish-npm.yml` remains tag-gated and effectively
-  inert — `package.json` is still `private: true` and npm-side trusted
-  publishing is activated with `first-release` — until `npm-packaging`
-  and `first-release` finalize the publishable manifest. Preserve both
-  properties.
+  clean runner), runs the smoke, interval, golden, package and consumer
+  test suites, and uploads `dist/`. `publish-npm.yml` is tag-gated,
+  verifies the tag equals `v<package.json version>`, and publishes with
+  provenance via trusted publishing. The package is release-ready at
+  `0.1.0` (`private` removed); the actual `v0.1.0` publish is pending the
+  npm-side trusted-publishing setup documented in `docs/packaging.md`.
+  Do not push a release tag before that prerequisite is configured.
 
 ## Project constraints (bind every change)
 
