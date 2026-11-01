@@ -71,27 +71,30 @@ support, and no threads or SIMD.
   entry points are absent from the export table
 
 ### Requirement: Explicit export surface
-The build SHALL export exactly the symbols recorded in a checked-in export
-manifest plus the C standard-library symbols, together with the allocator
-entry points needed by callers. Every manifest symbol SHALL be present and
-callable at runtime; the manifested surface SHALL be the frozen ABI for the
-JavaScript package work.
+The build SHALL export exactly the symbols recorded in a checked-in core
+export manifest plus the C standard-library symbols and the generated flat
+stdlib shims, together with the allocator entry points needed by callers.
+Every manifest symbol SHALL be present and callable at runtime; the core
+manifest SHALL remain the frozen ABI for the typed raw namespace (AD-011,
+AD-022, AD-024).
 
 #### Scenario: Manifest symbols are exported
 - **WHEN** the artifact is instantiated
-- **THEN** every symbol named in the export manifest and the memory allocator
-  entry points are callable, and every C stdlib function is present in the
-  module's export table
+- **THEN** every symbol named in the core export manifest and the memory
+  allocator entry points are callable, and every C stdlib function and
+  generated `_shim_stdlib_*` wrapper is present in the module's export table
 
 #### Scenario: Unlisted kernel symbols stay internal
-- **WHEN** a symbol outside the manifest and stdlib set is looked up on the
-  module
+- **WHEN** a symbol outside the manifest, stdlib and generated shim sets is
+  looked up on the module
 - **THEN** it is not exported
 
 ### Requirement: JS-safe C ABI shims
 The artifact SHALL provide C shims that make struct-returning, struct-by-value
 and `bool`-out-parameter entry points usable from JavaScript through pointers
-and 32-bit out-parameters, and SHALL document that ABI contract.
+and 32-bit out-parameters, including a flat wrapper for every C stdlib
+declaration that takes a struct by value, and SHALL document that ABI
+contract.
 
 #### Scenario: Struct-returning call is usable from JS
 - **WHEN** JavaScript calls the shimmed region-evaluation entry point with a
@@ -104,10 +107,17 @@ and 32-bit out-parameters, and SHALL document that ABI contract.
 - **THEN** the vector/region argument is passed by pointer and no struct-bytes
   argument is required from JavaScript
 
+#### Scenario: Struct-by-value stdlib calls are usable from JS
+- **WHEN** JavaScript calls a stdlib declaration whose C signature takes
+  `tvec2`/`tvec3` by value (for example the loft-between or sphere
+  constructors) through its generated shim
+- **THEN** the vectors are passed as flattened tree handles and no struct
+  bytes cross the JS boundary
+
 #### Scenario: ABI contract is documented
 - **WHEN** a maintainer reads `wasm/README.md`
-- **THEN** the pointer width, out-parameter conventions, mesh accessors, and the
-  status of struct-by-value stdlib entry points are described
+- **THEN** the pointer width, out-parameter conventions, mesh accessors, the
+  generated flat stdlib shim family, and string handling are described
 
 ### Requirement: Single-threaded meshing
 All meshing in the artifact SHALL execute through the single-threaded kernel
@@ -176,3 +186,19 @@ SHALL keep calling the same build entry point before publishing.
 - **WHEN** a version tag triggers `publish-npm.yml`
 - **THEN** it invokes the same build entry point and does not build through a
   separate path
+
+### Requirement: Generated bindings drift check
+The build SHALL verify that the checked-in generated bindings — the
+TypeScript stdlib surface and the C stdlib shim source — match what the
+vendored `libfive_stdlib.h` produces, and SHALL fail naming the stale files
+when they do not, rather than building an artifact with a divergent surface.
+
+#### Scenario: Up-to-date bindings pass
+- **WHEN** the build runs with generated files that match the vendored header
+- **THEN** the drift check succeeds and the build proceeds
+
+#### Scenario: Stale bindings fail the build
+- **WHEN** a declaration, alias or default in the vendored header changes
+  without regenerating the checked-in output
+- **THEN** the build exits non-zero before linking and names the stale
+  generated files

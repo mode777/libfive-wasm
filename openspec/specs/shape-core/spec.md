@@ -47,19 +47,17 @@ argument SHALL be used as-is (shared, not copied).
   proceeds with the mixed values
 
 ### Requirement: Arithmetic and math methods
-`Shape` SHALL expose the full opcode math-method table from
-`api-design.md` (binary arithmetic/comparison and unary math methods)
-with names mapped verbatim from the kernel opcode table (AD-010).
-Every method SHALL accept `TFloat` arguments where the opcode takes a
-second operand, SHALL return a new `Shape`, and SHALL leave its
-operands usable and unmodified. The method list SHALL be exercised
-against the kernel's opcode lookup so a name that stops resolving
-fails the suite.
+`Shape` SHALL expose the finalized opcode math-method table from
+`api-design.md` (binary arithmetic/comparison, unary math) with names mapped
+verbatim from the kernel table (AD-010). Binary `pow` is included; the
+internal `recip`/`nanfill` opcodes stay raw-only. Every method SHALL accept
+`TFloat` where the opcode takes a second operand, return a new `Shape`, and
+leave its operands usable and unmodified.
 
 #### Scenario: The method table matches api-design.md
 - **WHEN** the `Shape` surface is inspected
 - **THEN** it contains exactly the binary methods `add`, `sub`, `mul`,
-  `min`, `max`, `div`, `atan2`, `mod`, `compare`, `nthRoot` and the
+  `min`, `max`, `div`, `atan2`, `pow`, `mod`, `compare`, `nthRoot` and the
   unary methods `abs`, `square`, `sqrt`, `sin`, `cos`, `tan`, `asin`,
   `acos`, `atan`, `exp`, `log`, `neg`
 
@@ -69,6 +67,21 @@ fails the suite.
 - **THEN** `evalR` over a region inside the unit sphere returns negative
   bounds and over a region outside returns positive bounds
 
+#### Scenario: Methods return new shapes without consuming operands
+- **WHEN** a shape `s` is used as an operand in two different method
+  calls
+- **THEN** both calls return distinct new shapes, `s` still evaluates to
+  its original values, and `s` remains freeable exactly once by its owner
+
+#### Scenario: pow reproduces repeated multiplication
+- **WHEN** `libfive.x().pow(3)` is evaluated at sampled points
+- **THEN** it equals `libfive.x().mul(libfive.x()).mul(libfive.x())` within
+  float tolerance
+
+### Requirement: Opcode table consistency
+The `Shape` method table SHALL be checked against the kernel's opcode lookup
+so a stale name fails the suite.
+
 #### Scenario: Method table matches the kernel opcode table
 - **WHEN** each listed method name is resolved through the kernel's
   opcode lookup and the resulting opcode is used to build a tree via the
@@ -76,45 +89,6 @@ fails the suite.
 - **THEN** every method name resolves and produces a working shape, and
   a name not in the kernel table is absent from `Shape` rather than
   throwing at call time
-
-#### Scenario: Methods return new shapes without consuming operands
-- **WHEN** a shape `s` is used as an operand in two different method
-  calls
-- **THEN** both calls return distinct new shapes, `s` still evaluates to
-  its original values, and `s` remains freeable exactly once by its owner
-
-### Requirement: CSG methods
-`Shape` SHALL expose the stdlib `csg` section as methods mapping the
-corresponding C stdlib symbols the artifact exports, with camelCase
-naming (AD-010). Every argument slot that the C signature types as
-`tfloat` SHALL accept `TFloat`. The method SHALL return a new `Shape`
-and SHALL leave its operands usable.
-
-#### Scenario: The CSG method table matches api-design.md
-- **WHEN** the `Shape` surface is inspected
-- **THEN** it contains `union`, `intersect`, `difference`, `inverse`,
-  `offset`, `clearance`, `shell`, `blend`, `blendExpt`, `blendExptUnit`,
-  `blendRough`, `blendDifference`, `morph` and `loft`
-
-#### Scenario: CSG composition evaluates correctly
-- **WHEN** a sphere `difference` a box is built and evaluated at points
-  inside the sphere but outside the box versus inside both
-- **THEN** the first point evaluates to the sphere's value (the box
-  removed nothing there) and the second evaluates as subtracted
-
-#### Scenario: Blend variants and aliases are callable
-- **WHEN** `blend` (the alias of `blend_expt_unit`), `blendExpt`,
-  `blendExptUnit`, `blendRough` and `blendDifference` (with and without
-  the optional offset, which defaults per the kernel's documented
-  default) are called on two sphere shapes
-- **THEN** each returns a working shape whose interval evaluation
-  contains densely sampled point evaluations between the operands
-
-#### Scenario: loftBetween is not part of this surface
-- **WHEN** the `Shape` prototype is inspected after this change
-- **THEN** no `loftBetween` method exists — its C signature takes
-  `tvec3` by value and arrives with the stdlib pointer shims
-  (`stdlib-bindings`, per the recorded artifact caveat of AD-022)
 
 ### Requirement: Inspection and advanced operations
 `Shape` SHALL expose `toString()` returning the kernel's Scheme-style
@@ -209,3 +183,37 @@ type function signatures against them.
   root and builds `const s: Shape = (await init()).x().add(1)`
 - **THEN** the file typechecks and, run against a built artifact,
   produces a working shape
+
+### Requirement: CSG and loft methods
+`Shape` SHALL expose the stdlib `csg` section as methods mapping the
+corresponding C stdlib symbols the artifact exports — including
+`loftBetween`, whose flattened shim arrives with the generated stdlib
+surface — with camelCase naming (AD-010). Every `tfloat` slot SHALL accept
+`TFloat`. Methods SHALL return a new `Shape` and leave operands usable.
+
+#### Scenario: The CSG method table matches api-design.md
+- **WHEN** the `Shape` surface is inspected
+- **THEN** it contains `union`, `intersect`, `difference`, `inverse`,
+  `offset`, `clearance`, `shell`, `blend`, `blendExpt`, `blendExptUnit`,
+  `blendRough`, `blendDifference`, `morph`, `loft` and `loftBetween`
+
+#### Scenario: CSG composition evaluates correctly
+- **WHEN** a sphere `difference` a box is built and evaluated at points
+  inside the sphere but outside the box versus inside both
+- **THEN** the first point evaluates to the sphere's value (the box
+  removed nothing there) and the second evaluates as subtracted
+
+#### Scenario: Blend variants and aliases are callable
+- **WHEN** `blend` (the alias of `blend_expt_unit`), `blendExpt`,
+  `blendExptUnit`, `blendRough` and `blendDifference` (with and without
+  the optional offset, which defaults per the kernel's documented
+  default) are called on two sphere shapes
+- **THEN** each returns a working shape whose interval evaluation
+  contains densely sampled point evaluations between the operands
+
+#### Scenario: loftBetween arrives with the stdlib shims
+- **WHEN** `a.loftBetween(b, lower, upper)` is called on two 2D shapes with
+  three-component corner vectors
+- **THEN** a working shape is returned whose interval evaluation over a
+  region contains densely sampled point evaluations, and both operands
+  remain usable
