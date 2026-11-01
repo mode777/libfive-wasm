@@ -50,6 +50,9 @@ jobs:
       - name: Package test suite
         run: npm test
 
+      - name: Consumer package test
+        run: npm run test:package
+
       - name: Report artifact digest
         if: always()
         run: |

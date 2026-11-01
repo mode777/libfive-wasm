@@ -244,7 +244,7 @@ import { init, exportSTL } from 'libfive-wasm';
 import { writeFileSync } from 'node:fs';
 
 const libfive = await init();
-const part = libfive.sphere(1).difference(libfive.box([2, 1, 1]));
+const part = libfive.sphere(1).difference(libfive.box([-2, -1, -1], [2, 1, 1]));
 const mesh = part.mesh({ min: [-2, -2, -2], max: [2, 2, 2], res: 16 });
 writeFileSync('part.stl', Buffer.from(exportSTL(mesh)));
 ```

@@ -25,18 +25,23 @@ scripts/build-wasm.sh            ← single entry point CI calls
   3. emcmake cmake -C scripts/emcache.cmake ...  →  static libfive archives
   4. emcc link: core + stdlib + wasm/shim.c + wasm/stdlib_shim.c
      →  dist/libfive.wasm + ES6 glue
+  4b. scripts/build-js.mjs (release only): esbuild bundles the API + inlined
+     factory → dist/index.js; tsc emits dist/index.d.ts + declaration tree
+     (AD-026)
   5. node smoke + interval suites against the artifact (AD-015 acceptance),
      then the golden mesh suite for release builds when dev dependencies are
      installed (AD-025)
   6. print the artifact SHA-256 and size
 ```
 
-The TypeScript compile (`tsc build src/ → dist/index.js`) and the
-single-file packaging of the API + glue land with the `npm-packaging`
-change. From `js-package-core` on, the package sources (`src/`) are
-typechecked (`npm run check`) and their test suite (`npm test`, vitest)
-runs against the just-built artifact — locally and in CI
-(`build-wasm.yml` installs dev dependencies and runs it after
+Release builds produce the shippable package entry: `scripts/build-js.mjs`
+esbuild-bundles `src/index.ts` with the Emscripten factory inlined into
+`dist/index.js` and runs `tsc -p tsconfig.build.json` for the declaration tree
+(AD-026). `scripts/test-package.mjs` then packs, installs and consumes the
+tarball in a scratch Node + Vite project. From `js-package-core` on, the
+package sources (`src/`) are typechecked (`npm run check`) and their test
+suite (`npm test`, vitest) runs against the just-built artifact — locally and
+in CI (`build-wasm.yml` installs dev dependencies and runs it after
 `build-wasm.sh`).
 
 `build-wasm.sh` is the contract both GitHub workflows already call; it must

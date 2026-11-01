@@ -270,6 +270,20 @@ emcc \
 [[ -f "$OUT_DIR/libfive.js" ]] || die "link did not produce $OUT_DIR/libfive.js"
 
 # --------------------------------------------------------------------------
+# Package entry and declarations (AD-026). The debug flavor leaves dist/
+# untouched; only the release artifact is packaged.
+# --------------------------------------------------------------------------
+
+if [[ "$FLAVOR" == release ]]; then
+    if [[ ! -x "$REPO_ROOT/node_modules/.bin/tsc" ]] ||
+        [[ ! -d "$REPO_ROOT/node_modules/esbuild" ]]; then
+        die "package build tools are missing; run \`npm ci\` before building"
+    fi
+    log "building package entry and declarations"
+    node "$SCRIPT_DIR/build-js.mjs"
+fi
+
+# --------------------------------------------------------------------------
 # Acceptance tests
 # --------------------------------------------------------------------------
 

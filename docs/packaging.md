@@ -11,22 +11,29 @@ shipped. ADRs: AD-002, AD-007, AD-012, AD-019, AD-020.
   "type": "module",
   "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
   "types": "./dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": ["dist", "!dist/debug", "README.md", "LICENSE"],
   "sideEffects": false,
   "engines": { "node": ">=18" },
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "private": true
 }
 ```
 
 - **Single entry point.** `Shape`/stdlib/`init`/`exportSTL` and `libfive.raw`
   all hang off the default export surface; no subpaths to stabilize.
-- `dist/` contents (gitignored, built by `scripts/build-wasm.sh`):
-  `index.js` (API + loader + inlined ESM glue re-export), `index.d.ts`
-  (+ generated stdlib types), `libfive.wasm`.
+- `dist/` contents (gitignored, produced by `scripts/build-wasm.sh`):
+  `index.js` (esbuild bundle of the API and the inlined Emscripten factory),
+  `index.d.ts` plus the declaration tree it references, `libfive.wasm`, and
+  the raw `libfive.js` glue (kept for transparency/debugging; the bundle does
+  not depend on it). `dist/debug/` is excluded from the tarball.
 - `sideEffects: false` keeps consumer bundles tree-shakable (the wasm loads
   lazily inside `init()`).
-- No runtime dependencies. Dev dependencies (typescript, vitest, …) land
-  with the bindings change.
+- No runtime dependencies. Dev dependencies (esbuild, vite, typescript,
+  vitest, …) never enter the tarball.
+- `private` stays `true` until the release change flips it with the version
+  bump; `npm pack` works regardless, `npm publish` does not.
+- `prepack` runs `scripts/build-js.mjs`, so a pack from a built tree always has
+  current JS/declarations (it still requires `dist/libfive.wasm`).
 
 ## Environment support
 
@@ -40,12 +47,18 @@ shipped. ADRs: AD-002, AD-007, AD-012, AD-019, AD-020.
 
 ### Bundler notes (kept in README too)
 
-- **Vite / Rollup / webpack 5**: the `new URL('./libfive.wasm',
-  import.meta.url)` pattern is understood natively; the wasm is emitted as
-  an asset. No plugin required.
+- **Vite / Rollup / webpack 5**: the bundled entry contains the Emscripten
+  factory, so its literal `new URL('libfive.wasm', import.meta.url)` is
+  understood natively and the wasm is emitted as an asset. No plugin required.
 - **Server-side SSR (Next.js etc.)**: import with `init({ wasmBinary })` if
   the bundler relocates assets, or lazy-import inside the request handler.
-- Anything exotic: `options.wasmBinary` always wins.
+- Anything exotic: `options.wasmBinary` always wins; `options.locateWasm`
+  maps the artifact filename to a caller-controlled URL.
+
+The consumer test (`scripts/test-package.mjs`) packs the real tarball, installs
+it into a scratch project, meshes from Node, typechecks against the packaged
+declarations, and runs a Vite production build that must emit the wasm asset.
+CI runs it after the package suite.
 
 ## Versioning
 

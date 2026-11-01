@@ -42,6 +42,7 @@ Decisions marked 🔒 were explicitly locked with the maintainer on
 | AD-023 | Software interval rounding implementation: fenv-free Boost interval inclusion plus a double-evaluate/outward-`nextafter` policy, gated by an interval acceptance suite | Accepted |
 | AD-024 | Generated flat C stdlib shims from the same header parser as the TypeScript surface, checked in and drift-checked by the build | Accepted |
 | AD-025 | Golden mesh verification: public-API canonical scenes, exact count + float32-prefix hash goldens, capture-only workflow, one-ulp fault injection | Accepted |
+| AD-026 | Package artifact: one bundled ESM entry with the inlined Emscripten factory, declarations beside it, and tarball consumer verification | Accepted |
 
 ---
 
@@ -426,3 +427,39 @@ the build instead of shipping. Goldens are tied to the pinned toolchain and
 inputs, so a bump is a deliberate capture-and-review event, and the corpus
 stays small enough to read in a diff. This implements the verification half of
 AD-015 and supports AD-013/AD-022; it supersedes nothing.
+
+## AD-026 — Package artifact and consumer verification {#ad-026}
+
+**Context.** AD-002/AD-007 promise one ESM package with an async `init()` that
+finds its wasm beside the module, and `packaging.md` fixes a single `"."`
+export. The working tree could not deliver that: `dist/` held only the
+Emscripten glue and wasm, the loader reached the glue through a computed
+`import.meta.url` import that bundlers cannot emit, and `package.json` was the
+private scaffold. The tarball also had to be proven with a real install rather
+than source-tree tests.
+
+**Decision.** `scripts/build-js.mjs` bundles `src/index.ts` and the generated
+Emscripten factory into one `dist/index.js` (esbuild, ESM, ES2022) whose
+explicit `init` uses the inlined factory, leaving the glue's literal
+`new URL('libfive.wasm', import.meta.url)` visible to bundlers; Vite, Rollup
+and webpack 5 emit the wasm as an asset without a plugin. `tsc -p
+tsconfig.build.json` emits `dist/index.d.ts` and the declaration tree it
+references (`emitDeclarationOnly`). `package.json` declares the `"."` export,
+types, `files` (`dist` minus `dist/debug`, README and LICENSE),
+`sideEffects: false`, `engines.node >= 18` and MPL-2.0, keeping `private: true`
+until the release change. A root `LICENSE` carries the canonical MPL-2.0 text.
+`scripts/test-package.mjs` packs the tarball, installs it into a scratch
+project, meshes from Node, typechecks against the packaged declarations, and
+builds a Vite app that emits the wasm asset; CI runs it after the package
+suite. `wasmBinary`/`locateWasm` remain the escape hatches for environments
+that relocate assets. This implements the packaging half of AD-002/AD-007,
+supports AD-012/AD-019, and supersedes nothing.
+
+**Consequences.** The installed package is the tested unit, not just the source
+tree, and one entry works in Node and browser bundlers. The tarball carries the
+bundle, declarations, wasm, README and license only (no source, tests, debug
+artifact or vendored tree). Costs: esbuild and Vite become build/test dev
+dependencies, the entry is generated rather than a checked-in file, and the
+Emscripten glue's Node-only `module` import remains external (guarded at
+runtime, externalized by browser bundlers). The version, CHANGELOG, tag and
+npm publish remain the release change.

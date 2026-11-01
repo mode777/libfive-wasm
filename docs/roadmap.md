@@ -32,7 +32,7 @@ Change names below are the intended kebab-case names for
 | 4 | `shape-api` | 2 · Core JS package | 3 | Done |
 | 5 | `stdlib-bindings` | 3 · Stdlib & conveniences | 4 | Done |
 | 6 | `golden-verification` | 4 · Verify & package | 5 | Done |
-| 7 | `npm-packaging` | 4 · Verify & package | 6 | Planned |
+| 7 | `npm-packaging` | 4 · Verify & package | 6 | Done |
 | 8 | `first-release` | 5 · Ship | 7 | Planned |
 
 ---
