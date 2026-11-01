@@ -27,7 +27,7 @@ Change names below are the intended kebab-case names for
 | # | Change | Phase | Depends on | Status |
 |---|---|---|---|---|
 | 1 | `vendor-libfive` | 1 · De-risk the kernel | — | Done |
-| 2 | `wasm-build-pipeline` | 1 · De-risk the kernel | 1 | Planned |
+| 2 | `wasm-build-pipeline` | 1 · De-risk the kernel | 1 | Done |
 | 3 | `js-package-core` | 2 · Core JS package | 2 (surface only) | Planned |
 | 4 | `shape-api` | 2 · Core JS package | 3 | Planned |
 | 5 | `stdlib-bindings` | 3 · Stdlib & conveniences | 4 | Planned |
@@ -86,8 +86,10 @@ a sphere — the make-or-break change.
 - `build-wasm.yml` stops no-oping (its `scripts/build-wasm.sh` contract
   goes live).
 - **Implements:** AD-004 (shim), AD-008, AD-013, AD-014, AD-015, AD-019.
-- **Done when:** CI builds the artifact green on a clean runner; wasm
-  SHA-256 printed; smoke + interval suites pass.
+- **Done when:** CI builds the artifact green on a clean runner (vendoring +
+  deps from scratch); the printed wasm SHA-256 matches the uploaded artifact
+  and independent clean builds; smoke + interval suites pass; and the export
+  manifest/shim ABI is frozen for the JS package work.
 
 ## Phase 2 — Core JS package
 
