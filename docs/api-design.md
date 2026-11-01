@@ -190,11 +190,11 @@ exportSTL(mesh: Mesh): ArrayBuffer        // binary STL, built from views
 ## Raw bindings (AD-011)
 
 ```ts
-libfive.raw.libfive_tree_render_mesh_st(tree, regionPtr, res): number;
-libfive.raw.libfive_opcode_enum(name): number;
+libfive.raw._shim_tree_render_mesh_st(tree, regionPtr, res): number;
+libfive.raw._libfive_opcode_enum(name): number;
 libfive.raw._malloc(size) / _free(ptr);
-// … full typed C surface + shim helpers
-libfive.raw.memory: WebAssembly.Memory
+// … full typed C surface + shim helpers (keys verbatim from the artifact)
+libfive.raw.HEAPU8 / HEAPF32 / …   // live heap views; the memory accessors
 ```
 
 Documented as advanced/semver-minor. Never required for normal use.

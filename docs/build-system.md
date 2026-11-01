@@ -24,9 +24,13 @@ scripts/build-wasm.sh            ← single entry point CI calls
   5. print the artifact SHA-256 and size
 ```
 
-The TypeScript compile (`tsc build src/ → dist/index.js`, step 4 in earlier
-drafts) lands with the package work; this change stops at the wasm artifact and
-its tests.
+The TypeScript compile (`tsc build src/ → dist/index.js`) and the
+single-file packaging of the API + glue land with the `npm-packaging`
+change. From `js-package-core` on, the package sources (`src/`) are
+typechecked (`npm run check`) and their test suite (`npm test`, vitest)
+runs against the just-built artifact — locally and in CI
+(`build-wasm.yml` installs dev dependencies and runs it after
+`build-wasm.sh`).
 
 `build-wasm.sh` is the contract both GitHub workflows already call; it must
 remain executable with no arguments and exit non-zero on any failure.
@@ -176,7 +180,9 @@ configured standalone (`LIBFIVE_BUILD_FROM_ROOT` check). Therefore:
   indices, radius sanity, string round-trip, export-table presence) and
   `scripts/test-interval.mjs` (the AD-015 acceptance suite). Both instantiate
   the ES6 factory with `wasmBinary`, so they do not depend on glue path
-  resolution.
+  resolution. The package's own vitest suite (`npm test`: loader option
+  handling, raw-namespace manifest parity, kernel flows) runs against the
+  same artifact after the build, locally and in CI.
 - `build-wasm.sh --host=native` remains a planned convenience for the golden
   test workflow; it is not implemented in this change.
 - CI (`build-wasm.yml`) caches `build/cache`, `build/deps` and

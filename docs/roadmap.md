@@ -28,7 +28,7 @@ Change names below are the intended kebab-case names for
 |---|---|---|---|---|
 | 1 | `vendor-libfive` | 1 · De-risk the kernel | — | Done |
 | 2 | `wasm-build-pipeline` | 1 · De-risk the kernel | 1 | Done |
-| 3 | `js-package-core` | 2 · Core JS package | 2 (surface only) | Planned |
+| 3 | `js-package-core` | 2 · Core JS package | 2 (surface only) | Done |
 | 4 | `shape-api` | 2 · Core JS package | 3 | Planned |
 | 5 | `stdlib-bindings` | 3 · Stdlib & conveniences | 4 | Planned |
 | 6 | `golden-verification` | 4 · Verify & package | 5 | Planned |

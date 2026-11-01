@@ -1,0 +1,6 @@
+dist/
+build/
+vendor/
+node_modules/
+openspec/
+package-lock.json
