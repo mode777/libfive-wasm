@@ -1,0 +1,82 @@
+libfive-wasm carried patch 0003: header-only dependency plumbing
+
+Eigen and Boost are pinned header trees under build/deps (scripts/deps.lock)
+and are injected by the Emscripten initial-cache overlay; the emscripten
+sysroot has no pkg-config metadata and libpng arrives through the port at link
+time. This patch teaches the vendored CMake to accept those pre-set include
+directories, verify they were provided, ignore include dirs that do not exist,
+and stop requiring a PNG CMake target under Emscripten (AD-016; supports
+AD-008's portable, dependency-free-from-the-host build).
+
+Serves AD-008 and AD-016. Do not edit the vendored tree; edit this patch and
+bump patch_digest in vendor/libfive.lock.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -125,6 +125,31 @@
+     find_package(Python3 COMPONENTS Interpreter Development)
+ endif()
+ 
++# libfive-wasm (AD-016): under Emscripten the header-only dependencies are
++# supplied by the build overlay (build/deps/{eigen,boost}) through cache
++# variables instead of pkg-config/system discovery. Accept the common
++# alternative spellings, keep include discovery inclusive of paths outside the
++# sysroot, and fail loudly when the overlay forgot to pass them.
++if(EMSCRIPTEN)
++    if(NOT EIGEN_INCLUDE_DIRS AND EIGEN3_INCLUDE_DIR)
++        set(EIGEN_INCLUDE_DIRS "${EIGEN3_INCLUDE_DIR}")
++    endif()
++    if(NOT Boost_INCLUDE_DIRS AND BOOST_ROOT)
++        set(Boost_INCLUDE_DIRS "${BOOST_ROOT}/include")
++    endif()
++    if(NOT EIGEN_INCLUDE_DIRS)
++        message(FATAL_ERROR
++            "EIGEN_INCLUDE_DIRS must be set by the Emscripten overlay "
++            "(build/deps/eigen)")
++    endif()
++    if(NOT Boost_INCLUDE_DIRS)
++        message(FATAL_ERROR
++            "Boost_INCLUDE_DIRS must be set by the Emscripten overlay "
++            "(build/deps/boost)")
++    endif()
++    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)
++endif()
++
+ # Both Windows and Linux will attempt to build the Studio UI
+ if (BUILD_STUDIO_APP)
+     find_package(Qt5Core 5.12)
+--- a/libfive/src/CMakeLists.txt
++++ b/libfive/src/CMakeLists.txt
+@@ -134,16 +134,28 @@
+ # Produce a library named 'libfive' on all platforms
+ set_target_properties(libfive PROPERTIES PREFIX "")
+ 
++# libfive-wasm (AD-016): only include directories that exist are added. The
++# Emscripten build supplies Boost/Eigen from build/deps and png.h from the
++# Emscripten port, so unset variables must not become empty include entries.
++set(LIBFIVE_INCLUDE_DIRS "")
++foreach(incdir ${Boost_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} ${EIGEN_INCLUDE_DIRS})
++    if(incdir AND EXISTS "${incdir}")
++        list(APPEND LIBFIVE_INCLUDE_DIRS "${incdir}")
++    endif()
++endforeach()
+ target_include_directories(libfive SYSTEM PUBLIC
+-    ${Boost_INCLUDE_DIRS}
+-    ${PNG_INCLUDE_DIR}
+-    ${EIGEN_INCLUDE_DIRS}
++    ${LIBFIVE_INCLUDE_DIRS}
+ )
+ target_include_directories(libfive PUBLIC
+     ../include
+ )
+ 
+-set(LIBS ${PNG_LIBRARIES})
++# libpng is linked through the Emscripten port (-s USE_LIBPNG=1) instead of a
++# CMake target under Emscripten, so PNG_LIBRARIES may legitimately be empty.
++set(LIBS "")
++if(PNG_LIBRARIES)
++    set(LIBS ${PNG_LIBRARIES})
++endif()
+ 
+ if(UNIX AND NOT(APPLE))
+     set(LIBS ${LIBS} ${CMAKE_THREAD_LIBS_INIT})

@@ -1,0 +1,159 @@
+libfive-wasm carried patch 0005: single-threaded mesher under Emscripten
+
+libfive's mesher spawns std::async tasks even when settings.workers == 1. The
+wasm baseline has no pthreads (AD-008), and Emscripten's thread stubs fail at
+runtime, so every reachable worker-pool, dual-walk, object-pool and BRep-merge
+call site runs inline under __EMSCRIPTEN__. Native builds keep upstream's
+asynchronous paths for the future --host=native cross-check.
+
+Serves AD-008 (portable, thread-free baseline) and AD-014 (single-threaded
+kernel). Do not edit the vendored tree; edit this patch and bump patch_digest
+in vendor/libfive.lock.
+
+--- a/libfive/src/render/brep/worker_pool.inl
++++ b/libfive/src/render/brep/worker_pool.inl
+@@ -46,9 +46,6 @@
+     LockFreeStack tasks(settings.workers);
+     tasks.push({root, eval->getDeck()->tape, Neighbors(), settings.vol});
+ 
+-    std::vector<std::future<void>> futures;
+-    futures.resize(settings.workers);
+-
+     Root<T> out(root);
+     std::mutex root_lock;
+ 
+@@ -63,6 +60,14 @@
+     }
+ 
+     std::atomic_bool done(false);
++#ifdef __EMSCRIPTEN__
++    // libfive-wasm (AD-008, AD-014): the wasm artifact is thread-free, so the
++    // single worker runs inline on the caller's thread instead of spawning a
++    // task. Native builds keep upstream's asynchronous pool.
++    run(eval, tasks, out, root_lock, settings, done);
++#else
++    std::vector<std::future<void>> futures;
++    futures.resize(settings.workers);
+     for (unsigned i=0; i < settings.workers; ++i)
+     {
+         futures[i] = std::async(std::launch::async,
+@@ -76,6 +81,7 @@
+     {
+         f.get();
+     }
++#endif
+ 
+     assert(done.load() || settings.cancel.load());
+ 
+--- a/libfive/include/libfive/render/brep/dual.hpp
++++ b/libfive/include/libfive/render/brep/dual.hpp
+@@ -268,9 +268,17 @@
+         settings.progress_handler->nextPhase(t.size() + 1);
+     }
+ 
++    std::atomic_bool done(false);
++#ifdef __EMSCRIPTEN__
++    // libfive-wasm (AD-008, AD-014): no worker threads; each brep's share of
++    // the task stack is processed inline.
++    for (unsigned i=0; i < settings.workers; ++i) {
++        auto m = MesherFactory(breps[i], i);
++        Dual<N>::run(m, tasks, settings, done);
++    }
++#else
+     std::vector<std::future<void>> futures;
+     futures.resize(settings.workers);
+-    std::atomic_bool done(false);
+     for (unsigned i=0; i < settings.workers; ++i) {
+         futures[i] = std::async(std::launch::async,
+             [&breps, &tasks, &MesherFactory, &settings, &done, i]()
+@@ -284,6 +292,7 @@
+     for (auto& f : futures) {
+         f.get();
+     }
++#endif
+ 
+     assert(done.load() || settings.cancel.load());
+ 
+--- a/libfive/src/render/brep/object_pool.inl
++++ b/libfive/src/render/brep/object_pool.inl
+@@ -132,6 +132,28 @@
+         workers = workers_needed;
+     }
+ 
++#ifdef __EMSCRIPTEN__
++    // libfive-wasm (AD-008, AD-014): reclaim blocks inline; the wasm artifact
++    // never spawns worker threads.
++    for (unsigned j=0; j < allocated_blocks.size(); ++j) {
++        for (unsigned k=0; k < N; ++k) {
++            allocated_blocks[j][k].~T();
++        }
++        if (progress_watcher) {
++            progress_watcher->tick();
++        }
++        T::operator delete[](allocated_blocks[j]);
++    }
++    for (unsigned j=0; j < fresh_blocks.size(); ++j) {
++        for (unsigned k=0; k < fresh_blocks[j].second; ++k) {
++            fresh_blocks[j].first[k].~T();
++        }
++        if (progress_watcher) {
++            progress_watcher->tick();
++        }
++        T::operator delete [](fresh_blocks[j].first);
++    }
++#else
+     std::vector<std::future<void>> futures;
+     futures.resize(workers);
+ 
+@@ -167,6 +189,7 @@
+     for (auto& f : futures) {
+         f.get();
+     }
++#endif
+ 
+     allocated_blocks.clear();
+     fresh_blocks.clear();
+--- a/libfive/include/libfive/render/brep/brep.hpp
++++ b/libfive/include/libfive/render/brep/brep.hpp
+@@ -69,6 +69,33 @@
+         verts.resize(num_verts);
+         branes.resize(num_branes);
+ 
++#ifdef __EMSCRIPTEN__
++        // libfive-wasm (AD-008, AD-014): merge inline, with no worker threads.
++        for (unsigned i=0; i < workers; ++i) {
++            for (unsigned j=i; j < children.size(); j += workers) {
++                const auto& c = children[j];
++
++                // Unpack vertices, which all have unique indexes into
++                // our collecting vertex array.
++                for (unsigned k=0; k < c.indices.size(); ++k) {
++                    verts.at(c.indices.at(k)) = c.verts.at(k);
++                }
++
++                // Figure out where to position the branes in the
++                // collecting branes array, using a simple offset
++                // from the start.
++                size_t offset = 0;
++                for (unsigned k=0; k < j; ++k) {
++                    offset += children[k].branes.size();
++                }
++
++                // Then save all of the branes
++                for (unsigned k=0; k < c.branes.size(); ++k) {
++                    branes[offset + k] = c.branes[k];
++                }
++            }
++        }
++#else
+         std::vector<std::future<void>> futures;
+         futures.resize(workers);
+ 
+@@ -104,6 +131,7 @@
+         for (auto& f : futures) {
+             f.wait();
+         }
++#endif
+     }
+ };
+ 

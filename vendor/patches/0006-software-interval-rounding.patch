@@ -1,0 +1,57 @@
+libfive-wasm carried patch 0006: software interval rounding policy
+
+Boost 1.92 offers no policy that satisfies AD-015 under wasm: rounded_*_std
+changes the fenv rounding mode (Emscripten stubs it, so no widening happens),
+rounded_*_exact returns the same unrounded value from both directions, and
+hw_rounding.hpp hard-errors because Boost's wasm platform config defines
+BOOST_NO_FENV_H. This patch includes the Boost.Numeric.Interval components
+through the repo-owned header wasm/include/libfive_wasm/interval_rounding.hpp
+(which omits hw_rounding.hpp and selects the software policy) and removes the
+hardware-rounded policy from the alias. The overlay provides the header's
+include directory.
+
+Serves AD-015 (software interval rounding) and implements AD-023. Do not edit
+the vendored tree; edit this patch and bump patch_digest in vendor/libfive.lock.
+
+--- a/libfive/include/libfive/eval/interval.hpp
++++ b/libfive/include/libfive/eval/interval.hpp
+@@ -17,7 +17,12 @@
+ #pragma warning(push)
+ #pragma warning(disable : 4244)
+ #endif
+-#include <boost/numeric/interval.hpp>
++/*  libfive-wasm (AD-015, AD-023): wasm has no floating-point rounding-mode
++ *  control. This header pulls in the Boost.Numeric.Interval components without
++ *  hw_rounding.hpp (which hard-errors for wasm) and selects a software policy
++ *  that widens with std::nextafter instead of changing the rounding mode.
++ */
++#include <libfive_wasm/interval_rounding.hpp>
+ #ifdef _MSC_VER
+ #pragma warning(pop)
+ #endif
+@@ -380,10 +385,10 @@
+     }
+ 
+ protected:
+-    using I =  boost::numeric::interval<float,
++    using I = boost::numeric::interval<float,
+         boost::numeric::interval_lib::policies<
+-            boost::numeric::interval_lib::save_state<
+-                boost::numeric::interval_lib::rounded_transc_std<float>>,
++            boost::numeric::interval_lib::save_state_nothing<
++                libfive_wasm::rounded_transc_soft<float>>,
+             boost::numeric::interval_lib::checking_base<float>>>;
+     I i;
+ 
+--- a/libfive/src/CMakeLists.txt
++++ b/libfive/src/CMakeLists.txt
+@@ -138,7 +138,8 @@
+ # Emscripten build supplies Boost/Eigen from build/deps and png.h from the
+ # Emscripten port, so unset variables must not become empty include entries.
+ set(LIBFIVE_INCLUDE_DIRS "")
+-foreach(incdir ${Boost_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} ${EIGEN_INCLUDE_DIRS})
++foreach(incdir ${Boost_INCLUDE_DIRS} ${PNG_INCLUDE_DIR} ${EIGEN_INCLUDE_DIRS}
++                ${LIBFIVE_WASM_INCLUDE_DIR})
+     if(incdir AND EXISTS "${incdir}")
+         list(APPEND LIBFIVE_INCLUDE_DIRS "${incdir}")
+     endif()

@@ -1,0 +1,21 @@
+# scripts/deps.lock — pinned header-only dependencies for the wasm build
+# (AD-016, AD-021). Consumed by scripts/fetch-deps.sh.
+#
+# Format: tab-separated columns, one dependency per row, `#` starts a comment.
+#
+#   id            short name used on the command line and for build/deps/<id>
+#   version       pinned upstream release
+#   url           archive URL (must be https)
+#   sha256        SHA-256 of the archive bytes; verified before extraction
+#   dest          extraction directory, relative to the repository root
+#   archive_root  top-level directory inside the archive (stripped on extract)
+#   members       comma-separated archive paths to extract (relative to root)
+#   sentinel      file that must exist in the extracted tree (used by --check)
+#
+# All entries are header-only libraries: no compiled dependency source is
+# downloaded or built. Bump a pin by editing the row (url + sha256 + version)
+# and re-running scripts/fetch-deps.sh --force; see vendor/VENDOR.md for the
+# overall pin-bump procedure.
+
+eigen	3.4.0	https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz	8586084f71f9bde545ee7fa6d00288b264a2b7ac3607b974e54d13e7162c1c72	build/deps/eigen	eigen-3.4.0	Eigen,COPYING.MPL2	Eigen/Core
+boost	1.92.0	https://github.com/boostorg/boost/releases/download/boost-1.92.0/boost-1.92.0-b2-nodocs.tar.gz	e2a814b3a158ab482c7a3d330f8bf5a7a8423d258a4e2fb396996e00fcee2111	build/deps/boost	boost-1.92.0	boost,LICENSE_1_0.txt	boost/numeric/interval.hpp

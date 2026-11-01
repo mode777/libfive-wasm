@@ -1,0 +1,56 @@
+# wasm/exports.txt — frozen export surface of dist/libfive.wasm (AD-022).
+#
+# One C symbol per line, with the leading underscore Emscripten expects in
+# EXPORTED_FUNCTIONS. Comments and blank lines are stripped by the build.
+#
+# C stdlib symbols (sphere, box, ...) are NOT listed here: scripts/build-wasm.sh
+# appends every LIBFIVE_STDLIB declaration from the vendored
+# libfive_stdlib.h, so pin bumps pick up new functions automatically.
+#
+# Changing this file is a semver-relevant change to the raw namespace
+# (AD-011); review it as an ABI change.
+
+# --- Tree construction and inspection (libfive.h) ---
+_libfive_tree_x
+_libfive_tree_y
+_libfive_tree_z
+_libfive_tree_var
+_libfive_tree_is_var
+_libfive_tree_const
+_libfive_tree_nullary
+_libfive_tree_unary
+_libfive_tree_binary
+_libfive_tree_id
+_libfive_tree_delete
+_libfive_tree_remap
+_libfive_tree_optimized
+_libfive_tree_print
+_libfive_free_str
+
+# --- Opcode lookup ---
+_libfive_opcode_enum
+_libfive_opcode_args
+
+# --- Meshes and evaluators ---
+_libfive_mesh_delete
+_libfive_evaluator_delete
+_libfive_vars_delete
+
+# --- ABI shims (wasm/shim.h) ---
+_shim_region3_set
+_shim_vec3_set
+_shim_tree_eval_f
+_shim_tree_eval_r
+_shim_tree_eval_d
+_shim_tree_get_const
+_shim_tree_render_mesh_st
+_shim_mesh_verts
+_shim_mesh_tris
+_shim_mesh_vert_count
+_shim_mesh_tri_count
+_shim_tree_evaluator
+_shim_evaluator_update_vars
+
+# --- Allocator (callers build structs and strings in wasm memory) ---
+_malloc
+_free

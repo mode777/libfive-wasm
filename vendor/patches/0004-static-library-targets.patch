@@ -1,0 +1,46 @@
+libfive-wasm carried patch 0004: static library targets
+
+Emscripten has no general shared-library model without side modules: the wasm
+artifact links plain static archives into one module. Upstream declares both
+library targets SHARED, so this patch routes them through a cache variable that
+the initial-cache overlay sets to STATIC. Native builds (including the future
+--host=native cross-check) keep the upstream SHARED default.
+
+Serves AD-022 (wasm artifact mechanics); supports AD-008 (portable artifact).
+Do not edit the vendored tree; edit this patch and bump patch_digest in
+vendor/libfive.lock.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -23,6 +23,12 @@
+     "Tightly pack opcodes (breaks compatibility with older saved f-reps)"
+     OFF)
+ 
++# libfive-wasm (AD-022): Emscripten has no general shared-library model
++# without side modules, so the wasm build selects static archives from its
++# initial-cache overlay. Native builds keep the upstream default.
++set(LIBFIVE_LIBRARY_TYPE SHARED CACHE STRING
++    "Library type for libfive and libfive-stdlib (SHARED or STATIC)")
++
+ if(NOT CMAKE_BUILD_TYPE)
+     set(CMAKE_BUILD_TYPE RELEASE)
+ endif()
+--- a/libfive/src/CMakeLists.txt
++++ b/libfive/src/CMakeLists.txt
+@@ -2,7 +2,7 @@
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+ endif()
+ 
+-add_library(libfive SHARED
++add_library(libfive ${LIBFIVE_LIBRARY_TYPE}
+     eval/base.cpp
+     eval/deck.cpp
+     eval/eval_interval.cpp
+--- a/libfive/stdlib/CMakeLists.txt
++++ b/libfive/stdlib/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-add_library(libfive-stdlib SHARED stdlib.cpp stdlib_impl.cpp)
++add_library(libfive-stdlib ${LIBFIVE_LIBRARY_TYPE} stdlib.cpp stdlib_impl.cpp)
+ 
+ # Produce a library named 'libfive-stdlib' on all platforms
+ set_target_properties(libfive-stdlib PROPERTIES PREFIX "")

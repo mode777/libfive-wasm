@@ -28,15 +28,32 @@ jobs:
         with:
           node-version: '24'
 
-      # Scaffold guard: the real build lands as an OpenSpec change that adds
-      # scripts/build-wasm.sh (vendored libfive + emcmake + bindings).
-      # Until then this step succeeds with a notice so the pipeline stays green.
-      - name: Build
+      - name: Cache pinned inputs and build state
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/cache
+            build/deps
+            vendor/libfive
+          key: libfive-wasm-${{ runner.os }}-${{ hashFiles('vendor/libfive.lock', 'vendor/patches/*', 'scripts/deps.lock') }}
+          restore-keys: |
+            libfive-wasm-${{ runner.os }}-
+
+      - name: Build and test
+        run: bash scripts/build-wasm.sh
+
+      - name: Report artifact digest
+        if: always()
         run: |
-          if [ -f scripts/build-wasm.sh ]; then
-            bash scripts/build-wasm.sh
-          else
-            echo "::notice::scripts/build-wasm.sh not present yet — the wasm build lands via an OpenSpec change. Nothing to build."
+          if [ -f dist/libfive.wasm ]; then
+            digest="$(sha256sum dist/libfive.wasm | awk '{print $1}')"
+            size="$(wc -c < dist/libfive.wasm | awk '{print $1}')"
+            {
+              echo "### libfive.wasm"
+              echo ""
+              echo "- size: ${size} bytes"
+              echo "- sha256: \`${digest}\`"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload artifact
@@ -44,4 +61,4 @@ jobs:
         with:
           name: libfive-wasm
           path: dist
-          if-no-files-found: ignore
+          if-no-files-found: error

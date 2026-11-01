@@ -1,5 +1,7 @@
 node_modules/
 dist/
 build/
+build/cache/
+vendor/libfive/
 *.log
 .DS_Store
