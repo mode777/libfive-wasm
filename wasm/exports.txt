@@ -3,9 +3,11 @@
 # One C symbol per line, with the leading underscore Emscripten expects in
 # EXPORTED_FUNCTIONS. Comments and blank lines are stripped by the build.
 #
-# C stdlib symbols (sphere, box, ...) are NOT listed here: scripts/build-wasm.sh
-# appends every LIBFIVE_STDLIB declaration from the vendored
-# libfive_stdlib.h, so pin bumps pick up new functions automatically.
+# C stdlib symbols (sphere, box, ...) and the generated flat stdlib shims
+# (`_shim_stdlib_*`, AD-024) are NOT listed here: scripts/build-wasm.sh appends
+# every LIBFIVE_STDLIB declaration from the vendored libfive_stdlib.h and every
+# shim declared in the generated wasm/stdlib_shim.h, so pin bumps pick up new
+# functions automatically.
 #
 # Changing this file is a semver-relevant change to the raw namespace
 # (AD-011); review it as an ABI change.

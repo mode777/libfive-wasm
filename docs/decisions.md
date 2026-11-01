@@ -40,6 +40,7 @@ Decisions marked 🔒 were explicitly locked with the maintainer on
 | AD-021 | Generated, digest-verified vendoring and pinned header dependencies | Accepted |
 | AD-022 | Wasm artifact mechanics: static archives, explicit export manifest with per-symbol link roots, inline single-worker meshing, `_st`-only meshing, frozen core ABI | Accepted |
 | AD-023 | Software interval rounding implementation: fenv-free Boost interval inclusion plus a double-evaluate/outward-`nextafter` policy, gated by an interval acceptance suite | Accepted |
+| AD-024 | Generated flat C stdlib shims from the same header parser as the TypeScript surface, checked in and drift-checked by the build | Accepted |
 
 ---
 
@@ -360,3 +361,35 @@ on hardware rounding modes, and an undersized policy fails the build instead of
 producing subtle mesh artifacts. Widening is bounded to roughly one float ulp
 per operation, and the tightness caps keep adaptive meshing effective. This
 implements AD-015 and supersedes nothing.
+
+## AD-024 — Generated flat stdlib shims, one parser {#ad-024}
+
+**Context.** AD-017 generates the TypeScript stdlib surface from the vendored
+`libfive_stdlib.h`, and AD-022 records that C stdlib entry points taking
+`tvec2`/`tvec3` by value are not callable from JavaScript until pointer-
+flattened wrappers exist. Handwriting those wrappers would create a second
+manifest of the same header that drifts on every pin bump, and a per-signature
+"needs a shim" split would leave the JS layer with two call conventions.
+
+**Decision.** A shared parser, `scripts/lib/stdlib-parse.mjs`, reads the
+vendored header's `LIBFIVE_STDLIB` / `LIBFIVE_ALIAS` / `LIBFIVE_SECTION`
+markers, doc comments and `__N` defaults. Two emitters consume it:
+`scripts/gen-stdlib-ts.mjs` writes `src/gen/stdlib.ts` (AD-017) and
+`scripts/gen-stdlib-shims.mjs` writes `wasm/stdlib_shim.h`/`wasm/stdlib_shim.c`
+(new). Every declaration gets one `shim_stdlib_<name>` wrapper with a flat ABI:
+`libfive_tree`/`tfloat` → one tree handle, `tvec2` → two, `tvec3` → three,
+`int` → `int`, `const char*` → pointer; the wrapper constructs the local C
+struct and calls the real symbol. All generated calls go through these shims.
+Generated files are checked in, rendered deterministically, and the build runs
+both generators with `--check`, failing with the stale file names. The build
+append-exports `_shim_stdlib_*` alongside the C stdlib symbols; the curated
+core manifest (`wasm/exports.txt`) and the raw namespace are unchanged. Aliases
+are resolved in TypeScript to their target declarations and get no C wrapper.
+
+**Consequences.** The whole stdlib — including `loft_between`, shape
+constructors and transforms — is reachable with one JS call convention and no
+struct bytes crossing the boundary, while pin bumps regenerate a reviewable
+diff and a stale check cannot ship a divergent surface. Costs: ~80 tiny
+exported wrappers, a generated C source in the artifact, and a build step that
+must run after vendoring. This implements AD-017 in full, relies on AD-022's
+export-list mechanics and supersedes nothing.

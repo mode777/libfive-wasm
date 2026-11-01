@@ -90,6 +90,30 @@ async function convenience(): Promise<void> {
     shapeMesh.free();
     positionalMesh.free();
 
+    // Generated stdlib surface (stdlib-bindings): instance functions, aliases
+    // and receiver-leading method forms.
+    const ball: Shape = libfive.sphere(1, [0, 0, 0]);
+    const boxed: Shape = libfive.box([0, 0, 0], [1, 1, 1]);
+    const cube: Shape = libfive.cube([0, 0, 0], [1, 1, 1]);
+    const torus: Shape = libfive.torus(2, 0.5);
+    const moved: Shape = ball.move([1, 2, 3]);
+    const rotated: Shape = ball.rotateZ(Math.PI / 2);
+    const repeated: Shape = ball.arrayPolar(8);
+    const lofted: Shape = libfive
+        .circle(1)
+        .loftBetween(libfive.circle(0.5), [-1, 0, 0], [1, 0, 0]);
+    const label: Shape = libfive.text('A', [0, 0]);
+    const poly: Shape = libfive.polygon(1, 6);
+    void boxed;
+    void cube;
+    void torus;
+    void moved;
+    void rotated;
+    void repeated;
+    void lofted;
+    void label;
+    void poly;
+
     // fromTree adopts a raw handle through the instance-bound class.
     const adopted: Shape = libfive.Shape.fromTree(libfive.raw._libfive_tree_x());
 

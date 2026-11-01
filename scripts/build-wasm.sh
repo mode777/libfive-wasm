@@ -22,6 +22,8 @@ source "$SCRIPT_DIR/lib/vendor-common.sh"
 readonly EMSDK_VERSION="3.1.64"
 readonly EXPORT_MANIFEST="$REPO_ROOT/wasm/exports.txt"
 readonly STDLIB_HEADER="$REPO_ROOT/vendor/libfive/libfive/stdlib/libfive_stdlib.h"
+readonly STDLIB_SHIM_HEADER="$REPO_ROOT/wasm/stdlib_shim.h"
+readonly STDLIB_SHIM_SOURCE="$REPO_ROOT/wasm/stdlib_shim.c"
 
 FLAVOR=release
 RUN_TESTS=1
@@ -121,6 +123,15 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# Generated stdlib bindings (AD-017, AD-024): fail on drift, never build a
+# surface that disagrees with the vendored header.
+# --------------------------------------------------------------------------
+
+log "checking generated stdlib bindings"
+node "$SCRIPT_DIR/gen-stdlib-ts.mjs" --check
+node "$SCRIPT_DIR/gen-stdlib-shims.mjs" --check
+
+# --------------------------------------------------------------------------
 # Configure and compile
 # --------------------------------------------------------------------------
 
@@ -186,11 +197,21 @@ EXPORTS_FILE="$BUILD_DIR/exports.txt"
             if (line != "") print "_" line
         }
     ' "$STDLIB_HEADER"
+    awk '
+        /^libfive_tree shim_stdlib_[A-Za-z0-9_]+\(/ {
+            line = $0
+            sub(/\(.*/, "", line)
+            sub(/^libfive_tree /, "", line)
+            print "_" line
+        }
+    ' "$STDLIB_SHIM_HEADER"
 } | sort -u > "$EXPORTS_FILE"
 
 [[ -s "$EXPORTS_FILE" ]] || die "export list is empty"
 grep -qx '_malloc' "$EXPORTS_FILE" || die "export list is missing _malloc"
 grep -qx '_free' "$EXPORTS_FILE" || die "export list is missing _free"
+grep -qx '_shim_stdlib_sphere' "$EXPORTS_FILE" ||
+    die "export list is missing the generated stdlib shims"
 
 LINK_ROOTS=()
 while IFS= read -r symbol; do
@@ -232,7 +253,9 @@ log "linking $OUT_DIR/libfive.js"
 emcc \
     -I "$REPO_ROOT/wasm" \
     -I "$REPO_ROOT/vendor/libfive/libfive/include" \
+    -I "$REPO_ROOT/vendor/libfive/libfive/stdlib" \
     "$REPO_ROOT/wasm/shim.c" \
+    "$STDLIB_SHIM_SOURCE" \
     "$STDLIB_ARCHIVE" \
     "$LIB_ARCHIVE" \
     "${LINK_ROOTS[@]}" \

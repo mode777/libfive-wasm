@@ -118,16 +118,16 @@ describe('construction and coercion (task 2.1)', () => {
         const s = libfive.x();
         const b = libfive.y();
         try {
-            // Plain-JS callers omitting operands produce `undefined` in
-            // the argument slots; the kind check rejects them with the
-            // operation name before any kernel call (TS callers get a
-            // type error instead).
+            // Plain-JS callers omitting operands leave the argument slots
+            // undefined; the generated stdlib marshaller rejects the call
+            // with the operation name before any kernel call (TS callers
+            // get a type error instead).
             expect(() => (s as never as { union(): unknown }).union()).toThrow(
-                /Shape\.union: expected a number or Shape, got undefined/,
+                /Shape\.union: missing required argument 'b'/,
             );
             expect(() =>
                 (s as never as { clearance(v: unknown): unknown }).clearance(b),
-            ).toThrow(/Shape\.clearance: expected a number or Shape/);
+            ).toThrow(/Shape\.clearance: missing required argument 'offset'/);
         } finally {
             b.free();
             s.free();
@@ -184,8 +184,26 @@ describe('arithmetic and math methods (task 2.2)', () => {
         ]) {
             expect(proto[method], `missing method ${method}`).toBeTypeOf('function');
         }
-        // No loftBetween until the stdlib pointer shims (stdlib-bindings).
-        expect(proto.loftBetween).toBeUndefined();
+        // Generated stdlib method forms are installed from the header
+        // (stdlib-bindings, AD-024); loftBetween is now callable.
+        expect(proto.loftBetween).toBeTypeOf('function');
+        expect(proto.rotateZ).toBeTypeOf('function');
+    });
+
+    it('pow reproduces repeated multiplication', () => {
+        const powered = libfive.x().pow(3);
+        const multiplied = libfive.x().mul(libfive.x()).mul(libfive.x());
+        try {
+            for (const x of [-2, -0.5, 0, 0.5, 2]) {
+                expect(powered.evalF([x, 0, 0])).toBeCloseTo(
+                    multiplied.evalF([x, 0, 0]),
+                    4,
+                );
+            }
+        } finally {
+            powered.free();
+            multiplied.free();
+        }
     });
 
     it('methods return new shapes; operands stay usable and freeable once', () => {

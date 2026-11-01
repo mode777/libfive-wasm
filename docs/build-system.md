@@ -13,15 +13,20 @@ scripts/vendor-libfive.sh
 scripts/fetch-deps.sh
   build/deps/{eigen,boost}/          (pinned tarballs, SHA-256 verified)
 
+scripts/lib/stdlib-parse.mjs          (shared header parser, AD-017, AD-024)
 scripts/gen-stdlib-ts.mjs
   vendor/…/libfive_stdlib.h  →  src/gen/stdlib.ts   (checked in)
+scripts/gen-stdlib-shims.mjs
+  vendor/…/libfive_stdlib.h  →  wasm/stdlib_shim.{h,c}   (checked in)
 
 scripts/build-wasm.sh            ← single entry point CI calls
   1. assert Emscripten 3.1.64; prepare/verify vendor + deps (scripts above)
-  2. emcmake cmake -C scripts/emcache.cmake ...  →  static libfive archives
-  3. emcc link: core + stdlib + wasm/shim.c  →  dist/libfive.wasm + ES6 glue
-  4. node smoke + interval suites against the artifact (AD-015 acceptance)
-  5. print the artifact SHA-256 and size
+  2. `gen-stdlib-ts --check` + `gen-stdlib-shims --check` (fail on drift)
+  3. emcmake cmake -C scripts/emcache.cmake ...  →  static libfive archives
+  4. emcc link: core + stdlib + wasm/shim.c + wasm/stdlib_shim.c
+     →  dist/libfive.wasm + ES6 glue
+  5. node smoke + interval suites against the artifact (AD-015 acceptance)
+  6. print the artifact SHA-256 and size
 ```
 
 The TypeScript compile (`tsc build src/ → dist/index.js`) and the
@@ -34,6 +39,24 @@ runs against the just-built artifact — locally and in CI
 
 `build-wasm.sh` is the contract both GitHub workflows already call; it must
 remain executable with no arguments and exit non-zero on any failure.
+
+## Generated stdlib bindings (AD-017, AD-024)
+
+`libfive_stdlib.h` is the single source for both generated artifacts. The
+shared parser reads the same `LIBFIVE_STDLIB` / `LIBFIVE_ALIAS` /
+`LIBFIVE_SECTION` markers and `__N` defaults that upstream's generators use;
+`gen-stdlib-ts.mjs` emits the typed surface plus the spec table the runtime and
+tests iterate, and `gen-stdlib-shims.mjs` emits one flat `shim_stdlib_<name>`
+wrapper per declaration (struct-by-value arguments become two/three tree
+handles, `int` stays `int`, `const char*` stays a pointer).
+
+Both outputs are checked in, deterministic (header order, no timestamps), and
+byte-compared by the build before configuring. `npm run gen:stdlib` rewrites
+them after a vendor pin bump; without it the build fails naming the stale
+files. At link time the export list is the core manifest plus every
+`LIBFIVE_STDLIB` symbol plus every `_shim_stdlib_*` declared in the generated
+header, each passed as a link root. The core manifest and the typed
+`libfive.raw` namespace are unchanged (AD-011).
 
 ## Vendoring (AD-016, AD-021)
 

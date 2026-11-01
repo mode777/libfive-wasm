@@ -25,6 +25,7 @@ views — in Node and in the browser, with no native dependencies.
 ├──────────────────────────────────────────────────────────────────┤
 │  libfive.wasm                                                    │
 │    wasm/shim.c        ABI flattening helpers (ours, tiny)        │
+│    wasm/stdlib_shim.c generated flat stdlib wrappers (AD-024)    │
 │    libfive C API      vendor/libfive @ pinned commit             │
 │    libfive C++ core   tree, evaluators, dual-contouring mesher   │
 │    libfive stdlib     sphere/box/blends/transforms/text          │
@@ -40,14 +41,16 @@ code generation at runtime and no runtime dependency beyond the wasm module.
 ### Frozen artifact surface (AD-022)
 
 The wasm module's export table is the contract between the build and the
-JavaScript layers. `wasm/exports.txt` lists the core C API and shim symbols;
-the build appends every C stdlib function from the vendored header and passes
-each export as a link root. Only `libfive_tree_render_mesh_st` is present for
+JavaScript layers. `wasm/exports.txt` lists the core C API and handwritten shim symbols;
+the build appends every C stdlib function from the vendored header and every
+generated `_shim_stdlib_*` wrapper from `wasm/stdlib_shim.h`, and passes each
+export as a link root. Only `libfive_tree_render_mesh_st` is present for
 meshing (AD-014), and shapes/results cross the boundary through the shim
 functions documented in `wasm/README.md`. Editing the manifest is an ABI
 change, reviewed as one; `js-package-core` types its raw namespace against it.
-Struct-by-value C stdlib entry points are exported but not callable from
-JavaScript until their pointer shims arrive with `stdlib-bindings`.
+Every stdlib declaration — including the `tvec2`/`tvec3` by-value signatures —
+is reachable through its generated flat shim (AD-024); the curated raw
+namespace stays core-only (AD-011, AD-017).
 
 ## Source layout (planned)
 
@@ -55,9 +58,10 @@ JavaScript until their pointer shims arrive with `stdlib-bindings`.
 |---|---|
 | `src/loader/` | `init()` factory, wasm URL resolution (`new URL('./libfive.wasm', import.meta.url)`), Node/browser/worker handling, options |
 | `src/ffi/` | Typed declarations of the exported C functions and shim; struct builders (`region3`, `vec3`), string helpers, memory utilities |
-| `src/api/` | `Shape` class, `Mesh`, `Evaluator`, error types, method surface |
+| `src/api/` | `Shape` class, generated stdlib runtime and method installation, `Mesh`, error types |
 | `src/gen/` | **Generated, checked in**: `stdlib.ts` from `scripts/gen-stdlib-ts.mjs` (AD-017) |
 | `wasm/shim.c`, `wasm/shim.h` | Out-pointer wrappers for struct returns, pointer forms of struct-by-value arguments, region/vec builders, mesh accessors (AD-004, AD-022) |
+| `wasm/stdlib_shim.c`, `wasm/stdlib_shim.h` | **Generated, checked in**: one flat wrapper per C stdlib declaration (AD-024) |
 | `wasm/exports.txt` | Frozen core export manifest; stdlib symbols are appended at build time (AD-022) |
 | `wasm/include/libfive_wasm/` | Software interval rounding policy (AD-015, AD-023) |
 | `wasm/README.md` | Pointer, out-parameter, mesh-lifetime and absent-entry-point contract for the JS layer |
@@ -121,7 +125,8 @@ init(options)
   → locate libfive.wasm   (default: import.meta.url; or options.wasmBinary)
   → instantiate Emscripten ES6 factory   (fetch/fs per environment)
   → build ffi table from module exports
-  → construct API object: { Shape factory fns, stdlib fns, x/y/z, raw, version }
+  → resolve opcodes + every generated stdlib shim (fail fast on drift)
+  → construct API object: { stdlib fns, Shape factory fns, x/y/z, raw, debug }
   → returns Promise<Libfive>
 ```
 

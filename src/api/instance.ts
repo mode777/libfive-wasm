@@ -34,6 +34,7 @@ export function createInstance(module: LibfiveModule, debug: boolean): Libfive {
     const ShapeBound = createShapeClass(ctx);
 
     return {
+        ...ctx.stdlib.functions,
         raw: ctx.raw,
         debug,
         Shape: ShapeBound,

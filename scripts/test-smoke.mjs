@@ -62,6 +62,23 @@ check('stdlib symbols are exported', () => {
     }
 });
 
+check('generated stdlib shims are exported and callable', () => {
+    // AD-024: flat wrappers cover every declaration, including the
+    // struct-by-value entry points JavaScript cannot call directly.
+    for (const symbol of [
+        '_shim_stdlib_sphere',
+        '_shim_stdlib_loft_between',
+        '_shim_stdlib_text',
+    ]) {
+        assert.equal(
+            typeof module[symbol], 'function',
+            `${symbol} is not exported`);
+    }
+    const empty = module._shim_stdlib_emptiness();
+    assert.ok(empty, 'shim_stdlib_emptiness returned null');
+    module._libfive_tree_delete(empty);
+});
+
 // ---------------------------------------------------------------------------
 // Raw tree construction helpers.
 // ---------------------------------------------------------------------------

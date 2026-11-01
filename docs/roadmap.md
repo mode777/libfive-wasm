@@ -30,7 +30,7 @@ Change names below are the intended kebab-case names for
 | 2 | `wasm-build-pipeline` | 1 · De-risk the kernel | 1 | Done |
 | 3 | `js-package-core` | 2 · Core JS package | 2 (surface only) | Done |
 | 4 | `shape-api` | 2 · Core JS package | 3 | Done |
-| 5 | `stdlib-bindings` | 3 · Stdlib & conveniences | 4 | Planned |
+| 5 | `stdlib-bindings` | 3 · Stdlib & conveniences | 4 | Done |
 | 6 | `golden-verification` | 4 · Verify & package | 5 | Planned |
 | 7 | `npm-packaging` | 4 · Verify & package | 6 | Planned |
 | 8 | `first-release` | 5 · Ship | 7 | Planned |

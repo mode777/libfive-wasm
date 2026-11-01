@@ -18,6 +18,7 @@ import type {
     ModuleFactory,
 } from '../src/loader/types.js';
 import type { LibfiveModule } from '../src/ffi/types.js';
+import { STDLIB_SPECS } from '../src/gen/stdlib.js';
 
 // The public init() path is exercised with the glue seam mocked out.
 vi.mock('../src/loader/glue.js', () => ({
@@ -29,8 +30,8 @@ const loadFactoryMock = vi.mocked(loadFactory);
 /**
  * A minimal module stub: enough for createRaw's lazy assembly and the
  * eager method-table resolution (design D3) — runtime string helpers,
- * an opcode lookup that resolves any name, and callable stdlib `csg`
- * keys under the artifact's underscore-prefixed module keys.
+ * an opcode lookup that resolves any name, and every generated stdlib
+ * shim under the artifact's underscore-prefixed module keys.
  */
 function stubModule(): LibfiveModule {
     const buffer = new ArrayBuffer(1024);
@@ -56,20 +57,11 @@ function stubModule(): LibfiveModule {
         // requires a non-negative result at construction time).
         _libfive_opcode_enum: (ptr: number) => (strings.has(ptr) ? 1 : -1),
         _libfive_opcode_args: () => 0,
-        // stdlib csg section under the artifact's module keys (AD-022).
-        __union: () => 0,
-        _intersection: () => 0,
-        _inverse: () => 0,
-        _difference: () => 0,
-        _offset: () => 0,
-        _clearance: () => 0,
-        _shell: () => 0,
-        _blend_expt: () => 0,
-        _blend_expt_unit: () => 0,
-        _blend_rough: () => 0,
-        _blend_difference: () => 0,
-        _morph: () => 0,
-        _loft: () => 0,
+        // Generated flat stdlib shims (AD-024): the runtime resolves every
+        // one eagerly, so the stub must expose the full generated set.
+        ...Object.fromEntries(
+            STDLIB_SPECS.map((spec) => [`_${spec.shim}`, () => 0]),
+        ),
     };
     return module as unknown as LibfiveModule;
 }

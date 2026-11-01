@@ -11,7 +11,7 @@
 
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initFromFactory } from '../src/loader/index.js';
-import { CSG_TABLE } from '../src/api/context.js';
+import { STDLIB_SPECS } from '../src/gen/stdlib.js';
 import { loadRealFactory, loadRealModule } from './support/artifact.js';
 import type { Libfive, Shape } from '../src/index.js';
 
@@ -46,11 +46,20 @@ function box(x0: number, y0: number, z0: number, x1: number, y1: number, z1: num
 describe('CSG method table (task 3.1)', () => {
     it('the CSG surface matches api-design.md', () => {
         const proto = Object.getPrototypeOf(libfive.x()) as Record<string, unknown>;
-        for (const spec of CSG_TABLE) {
-            expect(proto[spec.method], `missing method ${spec.method}`).toBeTypeOf('function');
+        const methods = STDLIB_SPECS.filter(
+            (spec) => spec.section === 'csg' && spec.method !== undefined,
+        );
+        expect(methods.length).toBeGreaterThan(0);
+        for (const spec of methods) {
+            expect(
+                proto[spec.method!],
+                `missing method ${spec.method}`,
+            ).toBeTypeOf('function');
         }
-        // No loftBetween until the stdlib pointer shims (stdlib-bindings).
-        expect(proto.loftBetween).toBeUndefined();
+        // loftBetween now arrives through the generated flat shims (AD-024).
+        expect(proto.loftBetween).toBeTypeOf('function');
+        expect(proto.intersect).toBeTypeOf('function');
+        expect(proto.intersection).toBeUndefined();
     });
 
     it('the glue-key mapping is pinned (C `_union` → module `__union`)', async () => {
@@ -62,8 +71,41 @@ describe('CSG method table (task 3.1)', () => {
         expect(typeof module._intersection).toBe('function');
         expect(typeof module._blend_expt_unit).toBe('function');
         expect(typeof module._blend_difference).toBe('function');
+        expect(typeof module._shim_stdlib_union).toBe('function');
+        expect(typeof module._shim_stdlib_loft_between).toBe('function');
         // ...and the curated raw surface really does exclude them.
         expect((libfive.raw as unknown as Record<string, unknown>).__union).toBeUndefined();
+        expect(
+            (libfive.raw as unknown as Record<string, unknown>)
+                ._shim_stdlib_union,
+        ).toBeUndefined();
+    });
+
+    it('loftBetween works on two 2D shapes', () => {
+        const a = libfive.circle(1);
+        const b = libfive.circle(0.5);
+        const lower: [number, number, number] = [-1, 0, -1];
+        const upper: [number, number, number] = [1, 0, 1];
+        const lofted = a.loftBetween(b, lower, upper);
+        try {
+            const region = {
+                min: [-2, -2, -2] as [number, number, number],
+                max: [2, 2, 2] as [number, number, number],
+            };
+            const bounds = lofted.evalR(region);
+            for (let x = -1; x <= 1; x += 0.5) {
+                const value = lofted.evalF([x, 0, 0]);
+                expect(value).toBeGreaterThanOrEqual(bounds.lower - 1e-4);
+                expect(value).toBeLessThanOrEqual(bounds.upper + 1e-4);
+            }
+            // Both operands stay usable.
+            expect(a.evalF([0, 0, 0])).toBeLessThan(0);
+            expect(b.evalF([0, 0, 0])).toBeLessThan(0);
+        } finally {
+            lofted.free();
+            a.free();
+            b.free();
+        }
     });
 
     it('sphere difference box evaluates correctly at discriminating points', () => {

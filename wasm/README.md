@@ -6,8 +6,9 @@ listed here; changing it is an ABI change and must be reviewed as one.
 
 | File | Purpose |
 |---|---|
-| `shim.c`, `shim.h` | C ABI flattening for JavaScript callers |
-| `exports.txt` | Core + shim export manifest; stdlib symbols are appended at build time |
+| `shim.c`, `shim.h` | Handwritten C ABI flattening for the core API |
+| `stdlib_shim.c`, `stdlib_shim.h` | **Generated** flat wrappers for every C stdlib declaration (AD-024) |
+| `exports.txt` | Core + shim export manifest; stdlib and generated shim symbols are appended at build time |
 | `include/libfive_wasm/interval_rounding.hpp` | Software interval rounding policy (AD-015, AD-023) |
 | `../scripts/build-wasm.sh` | The single build entry point |
 | `../scripts/emcache.cmake` | CMake initial-cache overlay for the Emscripten configure |
@@ -26,9 +27,11 @@ looking the pointer up with `_malloc`.
 `exports.txt` names the core C API and shim symbols with the leading
 underscore that Emscripten uses in `EXPORTED_FUNCTIONS`. At link time
 `scripts/build-wasm.sh` also appends every `LIBFIVE_STDLIB` function from the
-vendored `libfive_stdlib.h` and passes each symbol as a link root
+vendored `libfive_stdlib.h` and every `_shim_stdlib_*` wrapper declared in
+`wasm/stdlib_shim.h`, and passes each symbol as a link root
 (`-Wl,--undefined=…`), so archive members that define exports are always
-pulled in.
+pulled in. The curated core manifest itself stays unchanged; the typed
+`libfive.raw` namespace does not include stdlib symbols (AD-011).
 
 With `-O3`, Emscripten minifies the raw WebAssembly export names; the generated
 ES6 glue re-exposes the documented names as `Module._libfive_…` /
@@ -78,15 +81,27 @@ Because the wasm heap can grow and relocate, consumers must re-create views
 from the current `HEAP*` buffer on each access rather than caching an
 `ArrayBuffer` (the `Mesh` wrapper in the package does exactly this, AD-006).
 
-## C stdlib caveat
+## Generated flat stdlib shims (AD-024)
 
-The artifact exports every C stdlib function (`sphere`, `box`, `union`, …), so
-the stdlib is compiled into the module and pinned symbol-by-symbol. Several of
-those functions take `tvec2`/`tvec3` **by value**, which JavaScript cannot
-express, and a few take structs by value in mixed positions. Their
-pointer-flattened wrappers (and the generated TypeScript surface, AD-017) land
-with the `stdlib-bindings` change; until then only flat stdlib entry points such
-as `emptiness()` are directly callable from JavaScript.
+The C stdlib's `tvec2`/`tvec3` by-value signatures cannot cross into
+JavaScript, so `scripts/gen-stdlib-shims.mjs` emits one wrapper per
+`LIBFIVE_STDLIB` declaration into `wasm/stdlib_shim.{h,c}`. Every wrapper is
+named `shim_stdlib_<name>` (C `_union` → `shim_stdlib_union`) and flattens the
+signature: `libfive_tree`/`tfloat` → one tree handle, `tvec2` → two, `tvec3` →
+three, `int` → `int`, `const char*` → pointer. The wrapper builds the local C
+struct and calls the real symbol. `LIBFIVE_ALIAS` names are resolved in
+TypeScript to their target declaration, so they get no C wrapper.
+
+The generated files are checked in and deterministic. Both they and
+`src/gen/stdlib.ts` are byte-compared against a fresh parse of the vendored
+header by `scripts/build-wasm.sh`, which fails with the stale file names when a
+pin bump was not regenerated (`npm run gen:stdlib`).
+
+Strings: `shim_stdlib_text` takes a pointer. The TypeScript layer encodes one
+byte per character in U+0000–U+00FF (Latin-1, matching the kernel's
+byte-oriented font and upstream's Python bindings), writes a NUL-terminated
+copy into wasm memory, calls the shim, and frees the buffer; the kernel parses
+the string into a tree synchronously, so no pointer survives the call.
 
 ## Interval rounding
 

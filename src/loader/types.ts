@@ -9,6 +9,7 @@
  */
 
 import type { LibfiveModule, RawLibfive } from '../ffi/types.js';
+import type { StdlibFunctions } from '../gen/stdlib.js';
 import type { Shape, ShapeClass } from '../api/shape.js';
 
 /**
@@ -34,8 +35,11 @@ export interface InitOptions {
     debug?: boolean;
 }
 
-/** A libfive-wasm instance: an independent module with its own heap. */
-export interface Libfive {
+/**
+ * A libfive-wasm instance: an independent module with its own heap. The
+ * generated stdlib functions (AD-017) are merged onto the instance.
+ */
+export interface Libfive extends StdlibFunctions {
     /** Typed raw C namespace — advanced escape hatch (AD-011). */
     readonly raw: RawLibfive;
     /** Whether lifecycle diagnostics were requested for this instance. */
