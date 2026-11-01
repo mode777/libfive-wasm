@@ -14,6 +14,9 @@ OpenSpec changes**.
   `.opencode/commands/` (`/opsx-*`) and skills in `.agents/skills/`.
 - Validate before committing any change:
   `npx @fission-ai/openspec@latest validate --all --strict`
+- Git: work directly on `main` — commit each change there and push. Do not
+  create feature branches or pull requests per change; CI
+  (`build-wasm.yml`) runs on every push to `main` and is the gate.
 - Keep CI green. Both workflows are intentional scaffolds that no-op gracefully
   until the real build/publish steps land via changes — preserve that property.
 
