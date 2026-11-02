@@ -196,11 +196,13 @@ Or connect to an already-running Chrome DevTools browser:
 CHROME_URL=http://127.0.0.1:9222 npm run thumbnails:capture
 ```
 
-The script starts `vite preview` on `127.0.0.1:4173` (set `CAPTURE_BASE_URL` to
-use an existing server), reads demo ids from the gallery, waits for each mesh,
-and writes `src/assets/previews/<id>.webp` plus `manifest.json`. On the
-verification server, use `chrome-headless-shell` with the SwiftShader flags the
-script supplies. CI consumes the checked-in images; it does not run a browser.
+The script starts `vite preview` on `127.0.0.1` on an OS-assigned free port, so
+a leftover listener on any fixed port cannot block the capture (set
+`CAPTURE_BASE_URL=http://host:port` to use an existing server instead), reads
+demo ids from the gallery, waits for each mesh, and writes
+`src/assets/previews/<id>.webp` plus `manifest.json`. On the verification
+server, use `chrome-headless-shell` with the SwiftShader flags the script
+supplies. CI consumes the checked-in images; it does not run a browser.
 
 Recapture when:
 

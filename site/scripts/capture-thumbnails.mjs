@@ -7,9 +7,12 @@
  *   CHROME_SHELL_PATH=/path/to/chrome-headless-shell npm run thumbnails:capture
  *   CHROME_URL=http://127.0.0.1:9222 npm run thumbnails:capture
  *
- * The script starts `vite preview` against `site/dist`, reads demo ids from the
- * gallery, opens each `#/p/<id>?preview=1`, waits for the mesh, and writes a
- * 640x400 CSS / DPR 2 WebP plus manifest.json into src/assets/previews/.
+ * Unless CAPTURE_BASE_URL points at an already-running server, the script
+ * starts `vite preview` against `site/dist` on an OS-assigned free port (a
+ * leftover listener on the default port cannot block the capture), reads demo
+ * ids from the gallery, opens each `#/p/<id>?preview=1`, waits for the mesh,
+ * and writes a 640x400 CSS / DPR 2 WebP plus manifest.json into
+ * src/assets/previews/.
  *
  * Captures are checked in and reviewed; CI does not run a browser.
  */
@@ -17,6 +20,7 @@
 import { createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer-core';
@@ -28,8 +32,6 @@ const CAPTURE_WIDTH = 640;
 const CAPTURE_HEIGHT = 400;
 const DEVICE_SCALE_FACTOR = 2;
 const QUALITY = 82;
-const DEFAULT_BASE_URL = 'http://127.0.0.1:4173';
-const PREVIEW_PORT = 4173;
 
 function fail(message) {
     throw new Error(message);
@@ -53,7 +55,27 @@ async function waitForServer(url, timeoutMs = 30000) {
     fail(`preview server did not start at ${url}`);
 }
 
-function startPreviewServer() {
+/**
+ * Asks the OS for a free loopback port by binding to port 0 and releasing it.
+ * The release→vite-bind window is a race, but `--strictPort` makes vite fail
+ * loudly instead of drifting to a port we are not waiting on.
+ */
+function freePort() {
+    return new Promise((resolve, reject) => {
+        const server = net.createServer();
+        server.once('error', reject);
+        server.listen(0, '127.0.0.1', () => {
+            const { port } = server.address();
+            server.close(() =>
+                typeof port === 'number'
+                    ? resolve(port)
+                    : reject(new Error('no free port was assigned')),
+            );
+        });
+    });
+}
+
+function startPreviewServer(port) {
     if (!existsSync(path.join(SITE_ROOT, 'dist', 'index.html'))) {
         fail('site/dist is missing; run `npm run build` first');
     }
@@ -65,7 +87,7 @@ function startPreviewServer() {
             '--host',
             '127.0.0.1',
             '--port',
-            String(PREVIEW_PORT),
+            String(port),
             '--strictPort',
         ],
         {
@@ -148,8 +170,9 @@ async function main() {
     mkdirSync(PREVIEW_DIR, { recursive: true });
 
     const externalBase = process.env.CAPTURE_BASE_URL;
-    const baseUrl = externalBase ?? DEFAULT_BASE_URL;
-    const server = externalBase ? null : startPreviewServer();
+    const port = externalBase ? null : await freePort();
+    const server = externalBase ? null : startPreviewServer(port);
+    const baseUrl = externalBase ?? `http://127.0.0.1:${port}`;
     let browser;
     try {
         if (!externalBase) await waitForServer(`${baseUrl}/`);
