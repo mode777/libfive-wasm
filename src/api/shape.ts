@@ -144,24 +144,31 @@ export class Shape {
     // Arithmetic and math methods (kernel opcode table, AD-010)
     // ------------------------------------------------------------------
 
+    /** Sum of this shape and `other`. */
     add(other: TFloat): Shape {
         return this.binary('add', other);
     }
+    /** Signed subtraction: `this - other`. */
     sub(other: TFloat): Shape {
         return this.binary('sub', other);
     }
+    /** Product of this shape and `other`. */
     mul(other: TFloat): Shape {
         return this.binary('mul', other);
     }
+    /** Pointwise minimum with `other`. */
     min(other: TFloat): Shape {
         return this.binary('min', other);
     }
+    /** Pointwise maximum with `other`. */
     max(other: TFloat): Shape {
         return this.binary('max', other);
     }
+    /** Quotient `this / other`. */
     div(other: TFloat): Shape {
         return this.binary('div', other);
     }
+    /** Two-argument arctangent of `this / other`. */
     atan2(other: TFloat): Shape {
         return this.binary('atan2', other);
     }
@@ -169,9 +176,11 @@ export class Shape {
     pow(other: TFloat): Shape {
         return this.binary('pow', other);
     }
+    /** Remainder of `this / other` (kernel `mod`). */
     mod(other: TFloat): Shape {
         return this.binary('mod', other);
     }
+    /** Difference comparison: negative where `this < other`, positive where `this > other`. */
     compare(other: TFloat): Shape {
         return this.binary('compare', other);
     }
@@ -180,39 +189,51 @@ export class Shape {
         return this.binary('nthRoot', other);
     }
 
+    /** Pointwise absolute value. */
     abs(): Shape {
         return this.unary('abs');
     }
+    /** `s * s`. */
     square(): Shape {
         return this.unary('square');
     }
+    /** Square root (negative side stays at the branch cut). */
     sqrt(): Shape {
         return this.unary('sqrt');
     }
+    /** Sine. */
     sin(): Shape {
         return this.unary('sin');
     }
+    /** Cosine. */
     cos(): Shape {
         return this.unary('cos');
     }
+    /** Tangent. */
     tan(): Shape {
         return this.unary('tan');
     }
+    /** Arcsine. */
     asin(): Shape {
         return this.unary('asin');
     }
+    /** Arccosine. */
     acos(): Shape {
         return this.unary('acos');
     }
+    /** Arctangent. */
     atan(): Shape {
         return this.unary('atan');
     }
+    /** Natural exponential `e^s`. */
     exp(): Shape {
         return this.unary('exp');
     }
+    /** Natural logarithm. */
     log(): Shape {
         return this.unary('log');
     }
+    /** Pointwise negation (complement: solid ↔ empty). */
     neg(): Shape {
         return this.unary('neg');
     }

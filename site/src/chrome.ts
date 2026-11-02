@@ -18,7 +18,7 @@ export function renderHeader(): HTMLElement {
     const repo = el('a', 'nav-link', 'GitHub');
     repo.href = REPO_URL;
     const docs = el('a', 'nav-link', 'Docs');
-    docs.href = `${REPO_URL}#readme`;
+    docs.href = '#/docs/';
     nav.append(repo, docs);
 
     header.append(brand, nav);

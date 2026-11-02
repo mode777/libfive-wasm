@@ -1,0 +1,26 @@
+{
+    "sections": [
+        {
+            "id": "start",
+            "label": "Start here",
+            "pages": ["overview", "getting-started"]
+        },
+        {
+            "id": "concepts",
+            "label": "Core concepts",
+            "pages": [
+                "mesh-resolution",
+                "shape-api",
+                "memory-lifecycle",
+                "evaluation",
+                "workers",
+                "bundlers"
+            ]
+        },
+        {
+            "id": "integration",
+            "label": "Integrating",
+            "pages": ["three-js-integration"]
+        }
+    ]
+}

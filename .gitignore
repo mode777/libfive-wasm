@@ -5,5 +5,7 @@ build/cache/
 vendor/libfive/
 site/dist/
 site/.vite/
+site/docs-content/api/
+site/src/docs/generated/
 *.log
 .DS_Store

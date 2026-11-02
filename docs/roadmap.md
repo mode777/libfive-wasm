@@ -36,6 +36,7 @@ Change names below are the intended kebab-case names for
 | 8 | `first-release` | 5 · Ship | 7 | Repo ready — publish pending npm trust |
 | 9 | `playground-demo` | 6 · Showcase | 7 (local artifact; not the npm publish) | Done |
 | 10 | `playground-gallery` | 6 · Showcase | 9 | Done |
+| 11 | `showcase-docs` | 6 · Showcase | 10 | Done |
 
 ---
 
@@ -258,6 +259,31 @@ view — no live editor yet.
 - **Done when:** the coverage matrix is complete and the whole catalog is
   validated in CI.
 
+### 11. `showcase-docs`
+
+**Goal:** user documentation hosted with the showcase on GitHub Pages.
+
+- Docs section inside the showcase app at `#/docs/…` routes, rendered with the
+  site's design system (AD-029): hand-written guides under
+  `site/docs-content/guides/` — overview, getting started, mesh resolution,
+  Shape API, memory/lifecycle, evaluation, workers, bundlers, and a three.js
+  integration article — plus a sidebar manifest (`nav.json`) and landing page.
+- TypeDoc API reference generated from `src/index.ts` via
+  `typedoc-plugin-markdown` (pinned in `site/` devDependencies) and compiled,
+  with the guides, by `site/scripts/build-docs.mjs` into a generated,
+  gitignored content module rendered by a lazy-loaded docs page.
+- Site `build`/`check` run the docs build first, so the existing `pages.yml`
+  deploys docs and showcase together from the tested artifact with no workflow
+  change; the header Docs link targets `#/docs/`.
+- Root `tests/showcase-docs.test.ts` validates nav ↔ files, intra-docs links
+  (including anchors), and typechecks every TypeScript example fence against
+  the package's public types; `npm run docs:check` gates the generation.
+- **Implements:** AD-029 (new: user documentation lives inside the showcase
+  app through one markdown pipeline; extends AD-028's site).
+- **Done when:** the Pages site serves the guides and generated reference in
+  the showcase design, the header Docs link opens them, the docs suite is
+  green in CI, and `docs:check` fails the build on generation errors.
+
 ## Later — unscheduled candidates
 
 Each a deliberate future change, ordered by expected value; none block
@@ -279,5 +305,5 @@ Each a deliberate future change, ordered by expected value; none block
 
 Every Accepted ADR is implemented by at least one planned change:
 AD-001/016/021 (1), AD-004/008/013/014/015/019 (2, 3), AD-002/003/005/006/007/
-009/010/011/017/018 (3–5, 7), AD-012 (8), AD-020 (8), AD-028 (9, 10). The
-showcase changes are deliberately outside the npm package (AD-028).
+009/010/011/017/018 (3–5, 7), AD-012 (8), AD-020 (8), AD-028 (9, 10), AD-029
+(11). The showcase changes are deliberately outside the npm package (AD-028).

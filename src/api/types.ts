@@ -15,16 +15,23 @@ export type TFloat = number | Shape;
 
 /** Tree-or-number vectors: components may each be `number | Shape`. */
 export type Vec2Arg = [TFloat, TFloat];
+/** Tree-or-number vectors: components may each be `number | Shape`. */
 export type Vec3Arg = [TFloat, TFloat, TFloat];
 
 /** Axis-aligned region: min/max corners. */
 export interface Region3 {
+    /** Lower corner `[x, y, z]`. */
     min: Vec3Arg;
+    /** Upper corner `[x, y, z]`. */
     max: Vec3Arg;
 }
 
 /** Options for meshing a shape (AD-009). */
 export interface MeshOptions {
+    /**
+     * The axis-aligned bounds to mesh, given as min/max corners. The mesher
+     * only looks inside this box, so it must enclose the shape.
+     */
     region: Region3;
     /**
      * Mesh resolution: the **inverse of the mesher's minimum feature size** —

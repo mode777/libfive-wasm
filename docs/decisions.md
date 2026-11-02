@@ -45,6 +45,7 @@ Decisions marked 🔒 were explicitly locked with the maintainer on
 | AD-026 | Package artifact: one bundled ESM entry with the inlined Emscripten factory, declarations beside it, and tarball consumer verification | Accepted |
 | AD-027 | Release procedure: changelog + version/tag gate, trusted-publishing prerequisite, post-publish registry/attestation and clean-install verification | Accepted |
 | AD-028 | Showcase site: a separate, non-published Vite app built from the locally linked package and deployed from the tested wasm artifact to GitHub Pages | Accepted |
+| AD-029 | User documentation: a docs section inside the showcase app (guides + TypeDoc-generated API reference through one markdown pipeline), tooling in `site/`, deployed with the showcase | Accepted |
 
 ---
 
@@ -536,3 +537,39 @@ Pages prerequisite; its demo coverage is intentionally small until the
 demo modules without `eval`, a future live editor will need its own worker
 recycling and untrusted-code handling change. This implements AD-007, AD-009,
 AD-019 and AD-026; it supersedes nothing.
+
+## AD-029 — User documentation inside the showcase app {#ad-029}
+
+**Context.** The GitHub Pages site demonstrates the library but documents
+nothing: the header's "Docs" link falls back to the repository README, and the
+concepts that actually trip up consumers (`res` semantics, the explicit memory
+model, worker and bundler wiring, 3D-engine integration) have no hosted prose.
+The package's TypeScript surface carries TSDoc comments, but nothing generates
+a browsable reference. Whatever documentation ships must look like the site it
+lives on and must not grow the published package.
+
+**Decision.** User documentation is a section of the showcase application
+itself, at `#/docs/…` hash routes, rendered with the site's own design system —
+no separate docs site, iframe, or third-party theme. Content comes through one
+build-time pipeline: hand-written markdown guides under
+`site/docs-content/guides/` plus a TypeDoc API reference generated from
+`src/index.ts` via `typedoc-plugin-markdown`, both compiled by
+`site/scripts/build-docs.mjs` into a generated, gitignored content module that
+the lazy-loaded docs route renders. Docs tooling (`typedoc`,
+`typedoc-plugin-markdown`, `marked`) lives in `site/` devDependencies only; the
+generated output is rebuilt in every site build (`build` = docs + vite build,
+`check` = docs + tsc), so the existing `pages.yml` deploys docs with the
+showcase from the tested artifact with no workflow change. A checked-in nav
+manifest plus a root test suite validate navigation ↔ files, intra-docs links,
+and typecheck every TypeScript example against the real package types.
+
+**Consequences.** One design, one navigation, and one deployment keep the docs
+maintainable inside the consumer app, and example typechecking stops guides
+from drifting from the API. Costs: generated reference pages require the docs
+build step before local typecheck/dev, TypeDoc and plugin versions must be
+pinned exactly because their markdown output shapes the content module, and
+the reference is only as good as the TSDoc on the public surface, which this
+change audits and fills. Search, versioning, and a live playground stay out of
+scope. This implements AD-028 (the docs are part of that site) and supports
+AD-003/AD-005/AD-006/AD-009/AD-011 by documenting the behaviors those ADRs
+locked; it supersedes nothing.

@@ -17,6 +17,7 @@
  * reach JavaScript as thrown errors are always bugs in the shim coverage.
  */
 export class LibfiveError extends Error {
+    /** Creates an error with `name` set to `"LibfiveError"`. */
     public constructor(message: string, options?: ErrorOptions) {
         super(message, options);
         this.name = 'LibfiveError';

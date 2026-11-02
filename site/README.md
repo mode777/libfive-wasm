@@ -89,6 +89,50 @@ root test fails if a section has no demo, if a demo declares an unknown section,
 or if any demo throws or meshes to empty/non-finite geometry. The gallery
 filter is generated from the same section set.
 
+## Documentation
+
+The user documentation section renders inside the showcase app at `#/docs/…`
+(AD-029). Content has two sources, compiled by one pipeline:
+
+- `docs-content/guides/*.md` — hand-written guides, checked in. The sidebar
+  structure lives in `docs-content/nav.json`: every listed page needs a file
+  and every file must be listed (both enforced by the root
+  `tests/showcase-docs.test.ts`, which also resolves intra-docs links —
+  including `#anchors` — and typechecks every ` ```ts ` fence against the
+  package's public types).
+- `docs-content/api/` — TypeDoc output (typedoc-plugin-markdown, pinned in
+  devDependencies), regenerated from the package source. **Generated and
+  gitignored**; never edit it by hand.
+
+Compile everything into the generated content module
+(`src/docs/generated/content.ts`, gitignored):
+
+```sh
+npm run docs          # typedoc + compile
+npm run docs:check    # same, plus structure verification (used by CI gates)
+```
+
+Relative markdown links between pages are rewritten to `#/docs/…` routes at
+build time; a link that does not resolve fails the build. `build` and `check`
+run `docs` first, so the Pages deployment always ships fresh docs.
+
+### Add a guide page
+
+1. Add `docs-content/guides/<slug>.md` starting with an `# H1` title (it
+   becomes the page and sidebar title).
+2. List `<slug>` in the matching section of `docs-content/nav.json`.
+3. Keep every ` ```ts ` example self-contained (its own imports) so the
+   typecheck harness can compile it; use ` ```ts nocheck ` for illustrative
+   pseudo-code.
+4. Run `npm run docs:check` and the root suite:
+   ```sh
+   npm test -- --run tests/showcase-docs.test.ts
+   ```
+5. Build the site and open `#/docs/<slug>`.
+
+The API reference regenerates automatically from the package's TSDoc; improve
+the reference by improving the doc comments on the public surface in `src/`.
+
 ## Shading
 
 The default viewport shading is **auto-smoothed at 30°**: normals are shared

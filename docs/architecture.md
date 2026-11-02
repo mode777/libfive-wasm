@@ -68,7 +68,7 @@ namespace stays core-only (AD-011, AD-017).
 | `wasm/include/libfive_wasm/` | Software interval rounding policy (AD-015, AD-023) |
 | `wasm/README.md` | Pointer, out-parameter, mesh-lifetime and absent-entry-point contract for the JS layer |
 | `scripts/` | Vendoring, dependency fetch, Emscripten build overlay, build entry point, Node test harnesses (see `build-system.md`) |
-| `site/` | Public showcase application (Vite + three.js + read-only code view); consumes the built package, not part of the tarball (AD-028) |
+| `site/` | Public showcase application (Vite + three.js + read-only code view); consumes the built package, not part of the tarball (AD-028). Includes the user documentation section: `site/docs-content/guides/` (checked-in markdown), `site/docs-content/nav.json` (sidebar manifest), and the TypeDoc-generated reference in `site/docs-content/api/` (gitignored) compiled by `site/scripts/build-docs.mjs` into a generated content module (AD-029) |
 | `tests/` | Vitest suites, including the showcase catalog validation against the real artifact |
 | `openspec/` | Capability specs and change records (the source of truth for planned work) |
 | `vendor/` | Pinned libfive + carried patches (AD-016) |

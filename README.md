@@ -10,10 +10,12 @@ the raw C namespace as an escape hatch.
 
 **Current release: `0.1.0`** (see [CHANGELOG.md](CHANGELOG.md)).
 
-**Live showcase:** <https://mode777.github.io/libfive-wasm/> — a gallery of
-demos with an orbitable 3D view and a read-only view of the source that
-produced each mesh. The showcase is a separate consumer of the package, not
-part of the npm tarball.
+**Live showcase & documentation:** <https://mode777.github.io/libfive-wasm/> —
+a gallery of demos with an orbitable 3D view and a read-only view of the source
+that produced each mesh, plus user documentation: guides, tutorials and the
+generated API reference at <https://mode777.github.io/libfive-wasm/#/docs/>.
+The showcase is a separate consumer of the package, not part of the npm
+tarball.
 
 - **Build f-rep trees in code.** `sphere(1).difference(box([2, 1, 1]))`,
   blends, offsets, shells, morphs, lofts, transforms, arrays and text — every
