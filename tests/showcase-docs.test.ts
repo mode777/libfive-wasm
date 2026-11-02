@@ -3,10 +3,11 @@
  *
  * Source-level checks over the checked-in docs content: the nav manifest
  * matches the guide files, and every intra-docs link — including heading
- * anchors — resolves. Generated output (TypeDoc markdown, the content
- * module) is validated by the site build (`npm run docs:check` in site/),
- * not here; TypeScript example fences are typechecked by the harness in
- * tests/support/docs-examples.ts.
+ * anchors — resolves. Links into the generated API section are validated
+ * against its path shape only (the files are absent from clean checkouts;
+ * their existence is enforced by the site build, where `npm run docs:check`
+ * fails the deploy on unresolved links). TypeScript example fences are
+ * typechecked by the harness in tests/support/docs-examples.ts.
  *
  * Copyright (C) 2026  libfive-wasm contributors
  *
@@ -140,7 +141,21 @@ describe('intra-docs links', () => {
                 if (target === '') continue; // same-page anchor, checked below
                 const resolved = path.resolve(guidesDir, target);
                 const key = path.relative(contentDir, resolved);
-                if (!existsSync(resolved) || !resolved.endsWith('.md')) {
+                if (!resolved.endsWith('.md')) {
+                    problems.push(`${file}: "${href}" does not point at markdown`);
+                    continue;
+                }
+                if (key.startsWith('api/')) {
+                    // Generated TypeDoc markdown is absent from clean
+                    // checkouts; its existence and links are enforced by the
+                    // site build (`docs:check` fails the deploy). Here, only
+                    // the checked-in shape is verified.
+                    if (!/^api\/(index|classes\/[^/]+|functions\/[^/]+|interfaces\/[^/]+|type-aliases\/[^/]+)\.md$/.test(key)) {
+                        problems.push(`${file}: "${href}" is not a valid API reference path (${key})`);
+                    }
+                    continue;
+                }
+                if (!existsSync(resolved)) {
                     problems.push(`${file}: "${href}" does not resolve (${key})`);
                     continue;
                 }
