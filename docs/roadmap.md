@@ -35,7 +35,7 @@ Change names below are the intended kebab-case names for
 | 7 | `npm-packaging` | 4 · Verify & package | 6 | Done |
 | 8 | `first-release` | 5 · Ship | 7 | Repo ready — publish pending npm trust |
 | 9 | `playground-demo` | 6 · Showcase | 7 (local artifact; not the npm publish) | Done |
-| 10 | `playground-gallery` | 6 · Showcase | 9 | Planned |
+| 10 | `playground-gallery` | 6 · Showcase | 9 | In progress — gallery expanded, deployment pending |
 
 ---
 

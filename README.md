@@ -221,8 +221,9 @@ npm run dev                    # http://localhost:5173/
 
 `npm run check`, `npm run lint` and `npm run build` in `site/` cover the site;
 the root `npm test` also meshes every demo in the catalog against the real
-artifact. The Pages workflow deploys the tested `dist/` artifact after a
-successful `build-wasm` run on `main`.
+artifact. The demo contract and authoring steps are in
+[site/README.md](site/README.md). The Pages workflow deploys the tested `dist/`
+artifact after a successful `build-wasm` run on `main`.
 
 ## License
 
