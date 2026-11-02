@@ -35,6 +35,6 @@
 
 ## 4. Deployment verification
 
-- [ ] 4.1 Commit and push to `main`; verify `build-wasm` and `pages.yml` succeed.
-- [ ] 4.2 Smoke-test the live wavy slab in smooth and Flat modes and record the
+- [x] 4.1 Commit and push to `main`; verify `build-wasm` and `pages.yml` succeed.
+- [x] 4.2 Smoke-test the live wavy slab in smooth and Flat modes and record the
   live URL.
