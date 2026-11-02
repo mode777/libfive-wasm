@@ -34,6 +34,8 @@ Change names below are the intended kebab-case names for
 | 6 | `golden-verification` | 4 · Verify & package | 5 | Done |
 | 7 | `npm-packaging` | 4 · Verify & package | 6 | Done |
 | 8 | `first-release` | 5 · Ship | 7 | Repo ready — publish pending npm trust |
+| 9 | `playground-demo` | 6 · Showcase | 7 (local artifact; not the npm publish) | In progress — site implemented, Pages deploy pending |
+| 10 | `playground-gallery` | 6 · Showcase | 9 | Planned |
 
 ---
 
@@ -202,6 +204,60 @@ stdlib.
 npm trusted-publishing setup (repository/workflow trust plus the `npm`
 environment) described in `docs/packaging.md`; no tag has been pushed.
 
+## Phase 6 — Showcase
+
+The public demo site is a consumer of the built package, not part of the npm
+tarball. It can land independently of the npm publish: it consumes the locally
+built `dist/` artifact, and the packed-tarball path stays covered by
+`test-package`.
+
+### 9. `playground-demo`
+
+**Goal:** a public, deployed gallery of libfive demos with a read-only code
+view — no live editor yet.
+
+- Make the repository public and enable Pages with a workflow source (manual
+  prerequisite, recorded in the change); GitHub Free does not serve Pages from
+  private repositories.
+- `pages.yml`: after `build-wasm` succeeds on `main`, download its `dist`
+  artifact, build `site/`, upload and deploy. The deployed site uses the
+  artifact CI already tested; no second Emscripten build.
+- `site/`: Vite + TypeScript app, hash routes (`#/`, `#/p/<id>`), clay-styled
+  three.js viewport (orbit, soft shadow, matcap/PBR), and a small read-only
+  code highlighter. Consume the package locally (`file:..`); never the
+  registry.
+- Mesh worker: `init()` once, run the demo builder and `shape.mesh()`
+  off-main-thread, transfer `copyVerts()`/`copyTris()` buffers, and cache the
+  current mesh for STL export.
+- Demo page: 3D/Code tabs. Each demo is a TypeScript module; the worker
+  imports its builder and the Code tab renders the same file via `?raw`, so
+  displayed and executed source cannot drift.
+- Initial demos span CSG, shapes, transforms and text; a CI test imports every
+  demo builder, meshes at low resolution, and asserts non-empty finite
+  geometry.
+- **Implements:** AD-028 (new: showcase site is a separate, non-published Vite
+  app built from the locally built package and deployed to Pages).
+- **Done when:** the Pages URL is live from CI, every initial demo meshes, the
+  Code tab shows the executed module source, and the affected docs are updated
+  (architecture repo map, packaging "not in the tarball", README live link,
+  package `homepage`).
+
+### 10. `playground-gallery`
+
+**Goal:** full feature coverage and a polished gallery.
+
+- Expand to 12–15 demos covering every stdlib section, arrays, `remap`,
+  evaluation and the raw escape hatch.
+- Feature-coverage manifest plus chips and filtering on the gallery; CI
+  asserts every stdlib section is represented and every demo meshes.
+- Inspector extras: vertex/triangle counts, wireframe/flat shading,
+  `toString()` Scheme panel, STL download, optional `evalF`/`evalD` probe.
+- Responsive layout, lazy demo loading, performance budget, and a
+  demo-authoring guide.
+- **Implements:** AD-028 (extends the showcase).
+- **Done when:** the coverage matrix is complete and the whole catalog is
+  validated in CI.
+
 ## Later — unscheduled candidates
 
 Each a deliberate future change, ordered by expected value; none block
@@ -215,11 +271,13 @@ Each a deliberate future change, ordered by expected value; none block
    API (supersedes AD-009's sync-only stance via a new ADR).
 4. `simd-variant` — optional SIMD artifact selected at `init()`.
 5. `tree-persistence` — save/load against buffers instead of files.
-6. `playground-demo` — browser demo page (docs site, not part of the npm
-   package).
+6. `playground-editor` — Monaco-based live editing on top of the showcase
+   shell: arbitrary demo code, debounced re-meshing, worker recycling, and
+   permalinks (not part of the npm package).
 
 ## Change-to-ADR coverage check
 
 Every Accepted ADR is implemented by at least one planned change:
 AD-001/016/021 (1), AD-004/008/013/014/015/019 (2, 3), AD-002/003/005/006/007/
-009/010/011/017/018 (3–5, 7), AD-012 (8), AD-020 (8).
+009/010/011/017/018 (3–5, 7), AD-012 (8), AD-020 (8), AD-028 (9, 10). The
+showcase changes are deliberately outside the npm package (AD-028).

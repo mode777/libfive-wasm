@@ -3,5 +3,7 @@ dist/
 build/
 build/cache/
 vendor/libfive/
+site/dist/
+site/.vite/
 *.log
 .DS_Store

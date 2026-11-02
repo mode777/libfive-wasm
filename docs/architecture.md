@@ -9,7 +9,9 @@ One npm package, `libfive-wasm`, ships the entire libfive kernel compiled to
 a single `libfive.wasm` plus a handwritten TypeScript API modeled on
 libfive's Python bindings: build functional-representation trees in JS,
 mesh them to watertight triangles, get the result as zero-copy typed-array
-views — in Node and in the browser, with no native dependencies.
+views — in Node and in the browser, with no native dependencies. The public
+showcase in `site/` is a separate consumer of that package, not part of the npm
+artifact (AD-028).
 
 ## Layering
 
@@ -52,7 +54,7 @@ Every stdlib declaration — including the `tvec2`/`tvec3` by-value signatures �
 is reachable through its generated flat shim (AD-024); the curated raw
 namespace stays core-only (AD-011, AD-017).
 
-## Source layout (planned)
+## Repository layout
 
 | Path | Contents |
 |---|---|
@@ -66,6 +68,9 @@ namespace stays core-only (AD-011, AD-017).
 | `wasm/include/libfive_wasm/` | Software interval rounding policy (AD-015, AD-023) |
 | `wasm/README.md` | Pointer, out-parameter, mesh-lifetime and absent-entry-point contract for the JS layer |
 | `scripts/` | Vendoring, dependency fetch, Emscripten build overlay, build entry point, Node test harnesses (see `build-system.md`) |
+| `site/` | Public showcase application (Vite + three.js + read-only code view); consumes the built package, not part of the tarball (AD-028) |
+| `tests/` | Vitest suites, including the showcase catalog validation against the real artifact |
+| `openspec/` | Capability specs and change records (the source of truth for planned work) |
 | `vendor/` | Pinned libfive + carried patches (AD-016) |
 | `dist/` | Build output (gitignored): `libfive.wasm`, `index.js`, `index.d.ts` |
 

@@ -44,6 +44,7 @@ Decisions marked 🔒 were explicitly locked with the maintainer on
 | AD-025 | Golden mesh verification: public-API canonical scenes, exact count + float32-prefix hash goldens, capture-only workflow, one-ulp fault injection | Accepted |
 | AD-026 | Package artifact: one bundled ESM entry with the inlined Emscripten factory, declarations beside it, and tarball consumer verification | Accepted |
 | AD-027 | Release procedure: changelog + version/tag gate, trusted-publishing prerequisite, post-publish registry/attestation and clean-install verification | Accepted |
+| AD-028 | Showcase site: a separate, non-published Vite app built from the locally linked package and deployed from the tested wasm artifact to GitHub Pages | Accepted |
 
 ---
 
@@ -496,3 +497,42 @@ Costs: the publish workflow is slower (full build + suites), the maintainer
 must activate trust before the first tag, and post-publish verification needs
 network access. This implements AD-020 and supports AD-012; it supersedes
 nothing.
+
+## AD-028 — Public showcase site {#ad-028}
+
+**Context.** The package has a verified artifact and a rich API but no
+browser-visible demonstration. The site must not become part of the published
+tarball, must not depend on the registry (the first npm publish is still
+pending), and should prove the artifact that CI already validated rather than
+re-building wasm in a second pipeline. Meshing is synchronous (AD-009), so an
+interactive page needs the documented worker pattern.
+
+**Decision.** A separate Vite + TypeScript application lives in `site/` with
+its own manifest and lockfile and is excluded from the npm tarball. It consumes
+`libfive-wasm` through a local `file:..` link resolving to the built
+`dist/index.js`; it never installs the package from the registry. A dedicated
+`pages.yml` is triggered by a successful `build-wasm` run on `main`, checks out
+the tested SHA, downloads that run's `dist` artifact, builds `site/` with
+`SITE_BASE=/libfive-wasm/`, and deploys with `actions/deploy-pages`. The
+repository must be public on GitHub Free and Pages must be enabled with
+`build_type=workflow`; both are one-time manual prerequisites.
+
+Each demo is a TypeScript module exporting metadata and a `build(libfive)`
+function. The mesh worker imports the builder, runs it and `shape.mesh()` off
+the main thread, transfers JS-owned `copyVerts()`/`copyTris()` buffers, and
+keeps the current mesh alive for `exportSTL()`; the page never holds wasm
+memory. The Code tab renders the same module via Vite's `?raw` import, so the
+displayed and executed source cannot drift. There is no editor, no `eval`, and
+no arbitrary user code in this phase; hash routes keep the static Pages host
+simple. The demo catalog is validated in the package test suite by meshing
+every entry against the real artifact.
+
+**Consequences.** The live site is a real consumer of the shipped entry and the
+deployed bytes are the CI-tested artifact. Site-only dependencies (three.js, a
+small highlighter) stay out of the package, and the package manifest remains
+focused. Costs: the showcase adds a second install/build path and a manual
+Pages prerequisite; its demo coverage is intentionally small until the
+`playground-gallery` follow-up; and because the page executes repository-owned
+demo modules without `eval`, a future live editor will need its own worker
+recycling and untrusted-code handling change. This implements AD-007, AD-009,
+AD-019 and AD-026; it supersedes nothing.

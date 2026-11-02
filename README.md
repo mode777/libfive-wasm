@@ -10,6 +10,11 @@ the raw C namespace as an escape hatch.
 
 **Current release: `0.1.0`** (see [CHANGELOG.md](CHANGELOG.md)).
 
+**Live showcase:** <https://mode777.github.io/libfive-wasm/> — a gallery of
+demos with an orbitable 3D view and a read-only view of the source that
+produced each mesh. The showcase is a separate consumer of the package, not
+part of the npm tarball.
+
 - **Build f-rep trees in code.** `sphere(1).difference(box([2, 1, 1]))`,
   blends, offsets, shells, morphs, lofts, transforms, arrays and text — every
   scalar slot also accepts a plain number.
@@ -201,6 +206,23 @@ version or a scene definition changes, recapture and review the JSON diff:
 ```sh
 npm run golden:capture
 ```
+
+### Showcase
+
+The public demo site lives in `site/` and consumes the locally built package
+(`file:..`), so build `dist/` first:
+
+```sh
+scripts/build-wasm.sh          # produces dist/
+cd site
+npm ci
+npm run dev                    # http://localhost:5173/
+```
+
+`npm run check`, `npm run lint` and `npm run build` in `site/` cover the site;
+the root `npm test` also meshes every demo in the catalog against the real
+artifact. The Pages workflow deploys the tested `dist/` artifact after a
+successful `build-wasm` run on `main`.
 
 ## License
 

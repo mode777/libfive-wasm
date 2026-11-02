@@ -224,6 +224,25 @@ configured standalone (`LIBFIVE_BUILD_FROM_ROOT` check). Therefore:
   `scripts/deps.lock`, then runs the script, reports the digest/size in the
   job summary and uploads `dist/`.
 
+## Showcase deployment (AD-028)
+
+`build-wasm.yml` stays the package quality gate. `pages.yml` is triggered by a
+successful `build-wasm` run on `main`; it checks out that run's `head_sha`,
+downloads the uploaded `libfive-wasm` artifact into `dist/`, installs `site/`
+(which links the root package with `file:..`), typechecks and builds the site
+with `SITE_BASE=/libfive-wasm/`, then uploads `site/dist` and deploys with
+`actions/deploy-pages`. It does not rebuild wasm or fetch `libfive-wasm` from
+the registry, so the live site is the artifact CI already tested.
+
+One-time repository prerequisites: the repository must be public (GitHub Free
+does not serve Pages from private repositories) and Pages must be configured
+with `build_type=workflow`. The site is not part of the npm tarball; its
+three.js/highlighter dependencies live only in `site/package.json`.
+
+Rollback: disable Pages in repository settings or revert `pages.yml`. The
+package build, wasm artifact and npm publish path are unaffected because the
+site consumes `dist/` and never participates in the package build.
+
 ## Golden mesh verification (AD-025)
 
 - Canonical scenes (sphere, gyroid, blended union, text) are built through the

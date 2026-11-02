@@ -30,6 +30,9 @@ shipped. ADRs: AD-002, AD-007, AD-012, AD-019, AD-020.
   lazily inside `init()`).
 - No runtime dependencies. Dev dependencies (esbuild, vite, typescript,
   vitest, …) never enter the tarball.
+- The public showcase in `site/` is **not** part of the package: it consumes
+  the built entry through a local `file:..` link and is deployed separately to
+  GitHub Pages (AD-028). Its three.js/highlighter dependencies are site-only.
 - `private` stays `true` until the release change flips it with the version
   bump; `npm pack` works regardless, `npm publish` does not.
 - `prepack` runs `scripts/build-js.mjs`, so a pack from a built tree always has

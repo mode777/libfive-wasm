@@ -11,6 +11,10 @@ export default tseslint.config(
             'vendor/**',
             'node_modules/**',
             'openspec/**',
+            // The showcase has its own Vite/TypeScript configuration and lint
+            // target (`cd site && npm run lint`); AD-028 keeps it outside the
+            // package source tree.
+            'site/**',
             // Build/test harness from the wasm-build-pipeline change: plain
             // Node scripts outside the package source tree.
             'scripts/**',

@@ -21,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/mode777/libfive-wasm/issues"
   },
-  "homepage": "https://github.com/mode777/libfive-wasm#readme",
+  "homepage": "https://mode777.github.io/libfive-wasm/",
   "engines": {
     "node": ">=18"
   },
