@@ -87,6 +87,18 @@ root test fails if a section has no demo, if a demo declares an unknown section,
 or if any demo throws or meshes to empty/non-finite geometry. The gallery
 filter is generated from the same section set.
 
+## Shading
+
+The default viewport shading is **auto-smoothed at 30°**: normals are shared
+across edges at or below that angle, and edges above it stay hard. This is
+derived from the mesh on the main thread (`toCreasedNormals` in
+`src/viewport.ts`); it does not change the mesh counts, STL output or the
+package.
+
+The inspector's **Flat** toggle is a diagnostic per-face view. It shows the
+actual triangle normals and ignores the crease rule; turning it off restores
+auto-smooth shading without re-meshing.
+
 ## Deployment
 
 `../.github/workflows/pages.yml` runs after a successful `build-wasm` on

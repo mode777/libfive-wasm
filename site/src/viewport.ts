@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+
+/** Edges above this angle stay hard; smaller edges share smooth normals. */
+export const CREASE_ANGLE_DEGREES = 30;
+const CREASE_ANGLE_RADIANS = THREE.MathUtils.degToRad(CREASE_ANGLE_DEGREES);
 
 export interface ViewportMesh {
     readonly verts: Float32Array;
@@ -104,16 +109,28 @@ export class Viewport {
         this.flatShading = false;
         this.clearMesh();
 
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(verts, 3));
-        geometry.setIndex(new THREE.BufferAttribute(tris, 1));
+        const indexed = new THREE.BufferGeometry();
+        indexed.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        indexed.setIndex(new THREE.BufferAttribute(tris, 1));
         // libfive is Z-up; three.js is Y-up. Rotate the display geometry so
         // columns stand upright and the ground plane is horizontal.
-        geometry.rotateX(-Math.PI / 2);
-        geometry.computeVertexNormals();
+        indexed.rotateX(-Math.PI / 2);
+
+        // Split normals only at genuine creases. The source mesh is watertight
+        // and shares vertices, so averaging every vertex (the old behavior)
+        // smeared hard rims into dark bands.
+        let geometry: THREE.BufferGeometry;
+        try {
+            geometry = toCreasedNormals(indexed, CREASE_ANGLE_RADIANS);
+        } finally {
+            indexed.dispose();
+        }
         geometry.computeBoundingBox();
         geometry.computeBoundingSphere();
-        if (!geometry.boundingBox || !geometry.boundingSphere) return;
+        if (!geometry.boundingBox || !geometry.boundingSphere) {
+            geometry.dispose();
+            return;
+        }
 
         const material = new THREE.MeshStandardMaterial({
             color: 0xd7bfa1,

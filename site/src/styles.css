@@ -727,6 +727,15 @@ a {
     gap: 6px;
 }
 
+.inspector-note {
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 9px;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+}
+
 .inspector-toggle {
     appearance: none;
     border: 1px solid var(--line);

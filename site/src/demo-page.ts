@@ -3,7 +3,7 @@ import { highlightSource } from './code-view';
 import type { DemoEntry } from './demos';
 import { getDemoSource } from './demos/sources';
 import { el, featureList } from './dom';
-import { Viewport } from './viewport';
+import { CREASE_ANGLE_DEGREES, Viewport } from './viewport';
 import type { MeshClient } from './worker-client';
 import type { DemoMesh } from './worker/run-demo';
 
@@ -158,7 +158,14 @@ export class DemoPage {
             });
             toggles.append(button);
         }
-        inspector.append(toggles);
+        inspector.append(
+            toggles,
+            el(
+                'p',
+                'inspector-note',
+                `Auto smooth ${CREASE_ANGLE_DEGREES}° · Flat shows one normal per triangle.`,
+            ),
+        );
 
         const tree = el('details', 'inspector-tree');
         tree.append(el('summary', '', 'Scheme form'));
