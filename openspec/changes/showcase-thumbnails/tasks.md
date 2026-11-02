@@ -41,7 +41,7 @@
 - [x] 4.1 Run root `npm test`, `npm run check`, `npm run lint` and site
   `npm run check`, `npm run lint`, `npm run build`; verify all pass and the
   package tarball still excludes preview assets and capture tooling.
-- [ ] 4.2 Browser smoke the built gallery at desktop and mobile widths, confirm
+- [x] 4.2 Browser smoke the built gallery at desktop and mobile widths, confirm
   thumbnails are sharp/lazy-loaded and the gallery remains lightweight, then
   commit/push and verify `build-wasm` and `pages.yml` succeed.
-- [ ] 4.3 Smoke-test the live gallery thumbnails and record the URL.
+- [x] 4.3 Smoke-test the live gallery thumbnails and record the URL.
