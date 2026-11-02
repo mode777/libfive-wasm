@@ -13,6 +13,19 @@ const ACCENTS = [
     '#4f647c',
 ];
 
+const previewUrls = import.meta.glob('./assets/previews/*.webp', {
+    eager: true,
+    query: '?url',
+    import: 'default',
+}) as Record<string, string>;
+
+const previewById = new Map(
+    Object.entries(previewUrls).map(([file, url]) => {
+        const name = file.split('/').pop() ?? '';
+        return [name.replace(/\.webp$/, ''), url] as const;
+    }),
+);
+
 function demoCard(demo: DemoEntry, index: number): HTMLElement {
     const card = el('a', 'demo-card');
     card.href = `#/p/${encodeURIComponent(demo.meta.id)}`;
@@ -24,9 +37,21 @@ function demoCard(demo: DemoEntry, index: number): HTMLElement {
 
     const visual = el('div', 'demo-card-visual');
     visual.setAttribute('aria-hidden', 'true');
+    const preview = previewById.get(demo.meta.id);
+    if (preview) {
+        const image = el('img', 'demo-card-image');
+        image.src = preview;
+        image.alt = '';
+        image.width = 1280;
+        image.height = 800;
+        image.loading = 'lazy';
+        image.decoding = 'async';
+        visual.append(image);
+    } else {
+        visual.append(el('span', 'demo-card-orb'));
+    }
     visual.append(
         el('span', 'demo-card-ordinal', String(index + 1).padStart(2, '0')),
-        el('span', 'demo-card-orb'),
         el('span', 'demo-card-mark', demo.meta.features[0] ?? 'shape'),
     );
 

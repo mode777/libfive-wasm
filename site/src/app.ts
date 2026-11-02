@@ -31,7 +31,9 @@ export function startApp(root: HTMLElement): void {
                 void import('./demo-page.js')
                     .then(({ DemoPage }) => {
                         if (token !== routeToken) return;
-                        const instance = new DemoPage(demo, getClient());
+                        const instance = new DemoPage(demo, getClient(), {
+                            preview: route.preview,
+                        });
                         page = instance;
                         root.replaceChildren(instance.element);
                         instance.mount();

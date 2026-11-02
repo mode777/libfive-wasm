@@ -1,17 +1,23 @@
 export type Route =
     | { kind: 'gallery' }
-    | { kind: 'demo'; id: string }
+    | { kind: 'demo'; id: string; preview: boolean }
     | { kind: 'not-found'; path: string };
 
-/** Parses `#/` and `#/p/<id>`; anything else is a not-found route. */
+/** Parses `#/` and `#/p/<id>?preview=1`; anything else is not-found. */
 export function parseRoute(hash: string): Route {
     const raw = hash.replace(/^#/, '');
-    const path = raw === '' ? '/' : raw;
+    const [pathPart = '/', queryString = ''] = raw.split('?');
+    const path = pathPart === '' ? '/' : pathPart;
     if (path === '/') return { kind: 'gallery' };
 
     const match = /^\/p\/([^/]+)\/?$/.exec(path);
     if (match?.[1]) {
-        return { kind: 'demo', id: decodeURIComponent(match[1]) };
+        const query = new URLSearchParams(queryString);
+        return {
+            kind: 'demo',
+            id: decodeURIComponent(match[1]),
+            preview: query.get('preview') === '1',
+        };
     }
     return { kind: 'not-found', path };
 }

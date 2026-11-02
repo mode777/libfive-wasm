@@ -1,0 +1,84 @@
+{
+  "previewVersion": 1,
+  "capturedAt": "2026-11-02T10:10:06.164Z",
+  "viewport": {
+    "width": 640,
+    "height": 400,
+    "deviceScaleFactor": 2
+  },
+  "quality": 82,
+  "demos": {
+    "blended-blob": {
+      "file": "blended-blob.webp",
+      "sourceHash": "bc1fea146f3dfd752d5b6ea83c43c1bc43924decd8ab42fcec9454c7a32b0f4f",
+      "width": 1280,
+      "height": 800
+    },
+    "smooth-morph": {
+      "file": "smooth-morph.webp",
+      "sourceHash": "dd55bc89e98996368240be0507931b4bb3edbbcbddcdddf36e04cf6d86dcdee9",
+      "width": 1280,
+      "height": 800
+    },
+    "gyroid-surface": {
+      "file": "gyroid-surface.webp",
+      "sourceHash": "aa21c1ed2b8c7b66b8d9f29d7f43b7ca9852d15db4f9d377d3b3b96703766806",
+      "width": 1280,
+      "height": 800
+    },
+    "hollow-frame": {
+      "file": "hollow-frame.webp",
+      "sourceHash": "37ed60806a8bb1d09473094df7ec111cd049cfe41010dfb4fec02a47779c4627",
+      "width": 1280,
+      "height": 800
+    },
+    "twisted-column": {
+      "file": "twisted-column.webp",
+      "sourceHash": "258891644f1aa5bc4f6ca2fef1643c12f3112dceae69fc3c2dd85c53f8cfbbc7",
+      "width": 1280,
+      "height": 800
+    },
+    "loft-tower": {
+      "file": "loft-tower.webp",
+      "sourceHash": "0eea94583920bfd25c2045a46a6362c8eed513a4c729c57dab396de30682f84e",
+      "width": 1280,
+      "height": 800
+    },
+    "revolved-vase": {
+      "file": "revolved-vase.webp",
+      "sourceHash": "9779381c7c01e6a28609e3bd8fbbbc633f474515497714458090071f431f182e",
+      "width": 1280,
+      "height": 800
+    },
+    "wavy-slab": {
+      "file": "wavy-slab.webp",
+      "sourceHash": "75eef3d3f8b77490c32a2edf2d7397122cfd08d8436fc24555db1f989b13222b",
+      "width": 1280,
+      "height": 800
+    },
+    "lattice-cube": {
+      "file": "lattice-cube.webp",
+      "sourceHash": "3826e6780f595321aa81f86000facb336fa4ad301bbd01edf2bec37788defcf4",
+      "width": 1280,
+      "height": 800
+    },
+    "polar-gear": {
+      "file": "polar-gear.webp",
+      "sourceHash": "1c0229dddd1ac974f18edf346dc7922021c22bc7dcc458cf3a9800b792221202",
+      "width": 1280,
+      "height": 800
+    },
+    "text-badge": {
+      "file": "text-badge.webp",
+      "sourceHash": "f3bfda02178feb8d592f2647279833448e452a22e5adfb32f977d9e614677b73",
+      "width": 1280,
+      "height": 800
+    },
+    "raw-escape": {
+      "file": "raw-escape.webp",
+      "sourceHash": "c4891fa53aa5aa7b45b46a6f63480664d4c7f6e77d491fdd9c3f832b16d25767",
+      "width": 1280,
+      "height": 800
+    }
+  }
+}

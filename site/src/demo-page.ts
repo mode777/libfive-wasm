@@ -9,6 +9,11 @@ import type { DemoMesh } from './worker/run-demo';
 
 type Tab = '3d' | 'code';
 
+export interface DemoPageOptions {
+    /** Hide the page chrome and use the fixed 16:10 capture frame. */
+    readonly preview?: boolean;
+}
+
 function formatVector(values: readonly unknown[]): string {
     return values.map((value) => String(value)).join(', ');
 }
@@ -37,12 +42,16 @@ export class DemoPage {
     private loadToken = 0;
     private disposed = false;
 
-    constructor(demo: DemoEntry, client: MeshClient) {
+    constructor(
+        demo: DemoEntry,
+        client: MeshClient,
+        options: DemoPageOptions = {},
+    ) {
         this.demo = demo;
         this.source = getDemoSource(demo.meta.id);
         this.client = client;
 
-        this.element = el('div', 'page');
+        this.element = el('div', options.preview ? 'page is-preview' : 'page');
         const main = el('main', 'demo-layout');
         const stage = el('section', 'demo-stage');
         stage.setAttribute('aria-label', `${demo.meta.title} demo`);

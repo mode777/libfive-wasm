@@ -75,6 +75,8 @@ Rules:
    npm test -- --run tests/showcase-demos.test.ts
    ```
 6. Build the site and open the demo route.
+7. Capture the new thumbnail (see [Thumbnails](#thumbnails)) and commit the
+   WebP plus manifest.
 
 The Code tab reads the module through Vite's `?raw` import in `sources.ts`, so
 the displayed source is the same file the worker executed. Do not duplicate the
@@ -98,6 +100,51 @@ package.
 The inspector's **Flat** toggle is a diagnostic per-face view. It shows the
 actual triangle normals and ignores the crease rule; turning it off restores
 auto-smooth shading without re-meshing.
+
+## Thumbnails
+
+Gallery cards use pre-rendered WebP thumbnails captured from the real demo
+page. The capture route is:
+
+```text
+#/p/<id>?preview=1
+```
+
+Preview mode hides the header, tabs, meta bar, aside and footer and fixes the
+stage to a 16:10 frame. The capture is **640×400 CSS pixels at deviceScaleFactor
+2** (1280×800) and WebP quality 82.
+
+Build the site, then run the capture:
+
+```sh
+npm run build
+CHROME_SHELL_PATH=/path/to/chrome-headless-shell npm run thumbnails:capture
+```
+
+Or connect to an already-running Chrome DevTools browser:
+
+```sh
+CHROME_URL=http://127.0.0.1:9222 npm run thumbnails:capture
+```
+
+The script starts `vite preview` on `127.0.0.1:4173` (set `CAPTURE_BASE_URL` to
+use an existing server), reads demo ids from the gallery, waits for each mesh,
+and writes `src/assets/previews/<id>.webp` plus `manifest.json`. On the
+verification server, use `chrome-headless-shell` with the SwiftShader flags the
+script supplies. CI consumes the checked-in images; it does not run a browser.
+
+Recapture when:
+
+- a demo module changes — the source-hash drift test fails otherwise;
+- a demo is added;
+- the viewport, lighting, material or preview CSS changes — bump
+  `PREVIEW_VERSION` in `scripts/capture-thumbnails.mjs` as part of that change
+  and recapture.
+
+`tests/showcase-thumbnails.test.ts` enforces manifest coverage, non-empty WebP
+files, source hashes and orphan detection. If an image is missing, the gallery
+falls back to the CSS orb. Images are Vite content-hashed, lazy-loaded and are
+not part of the npm package.
 
 ## Deployment
 
