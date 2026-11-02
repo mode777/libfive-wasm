@@ -72,7 +72,7 @@
 - [x] 5.3 Make the repository public and enable Pages with
   `build_type=workflow` (manual prerequisite); verify
   `gh api repos/mode777/libfive-wasm/pages` reports the workflow build type.
-- [ ] 5.4 Push to `main`, confirm `build-wasm` succeeds, then confirm
+- [x] 5.4 Push to `main`, confirm `build-wasm` succeeds, then confirm
   `pages.yml` deploys the same run's artifact; verify the live URL returns the
   app shell and a demo route loads.
 - [x] 5.5 Document the rollback path (disable Pages or revert `pages.yml`) and
@@ -99,7 +99,7 @@
   `site/` and the consumer build still emits the wasm asset.
 - [x] 7.3 Run a clean `site` install/build from the CI artifact layout and
   verify the output contains the app shell, worker chunk, wasm and code assets.
-- [ ] 7.4 Smoke-test the deployed gallery and one demo page (3D, Code, STL) and
+- [x] 7.4 Smoke-test the deployed gallery and one demo page (3D, Code, STL) and
   record the live URL in the change summary.
 
 ## Workflow follow-up
