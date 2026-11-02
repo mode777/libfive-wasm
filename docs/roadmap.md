@@ -37,6 +37,7 @@ Change names below are the intended kebab-case names for
 | 9 | `playground-demo` | 6 · Showcase | 7 (local artifact; not the npm publish) | Done |
 | 10 | `playground-gallery` | 6 · Showcase | 9 | Done |
 | 11 | `showcase-docs` | 6 · Showcase | 10 | Done |
+| 12 | `expand-showcase-gallery` | 6 · Showcase | 10, 11 | In progress |
 
 ---
 
@@ -284,6 +285,30 @@ view — no live editor yet.
   the showcase design, the header Docs link opens them, the docs suite is
   green in CI, and `docs:check` fails the build on generation errors.
 
+### 12. `expand-showcase-gallery`
+
+**Goal:** the gallery as complete executable documentation: every canonical
+method demonstrated by a real showcase piece, enforced in CI.
+
+- Twenty-five demos: seven showcase objects in the tradition of the
+  OpenSCAD/build123d/CadQuery galleries (stud brick, enclosure, pillow
+  block, screw thread, clock face, rook, displaced pebble) and six feature
+  ladders in the CadQuery/JSCAD tradition (primitive zoo, blend catalog,
+  symmetry lab, deformations, field math, eval/inspection).
+- New `math` gallery section; `wavy-slab` retagged.
+- Method-level coverage invariant (AD-030): the required surface derives
+  from `STDLIB_SPECS` plus a literal `Shape`/factory table; comments and
+  `Math.*` calls are stripped before word-boundary call matching; aliases
+  cover their targets. Root `tests/showcase-coverage.test.ts` fails CI
+  naming any uncovered method.
+- Thirteen new thumbnails captured with the existing pipeline; the catalog
+  pin in `tests/showcase-demos.test.ts` moves to 25.
+- **Implements:** AD-030 (new: method-level demo coverage by source
+  matching); extends AD-028's showcase.
+- **Done when:** the coverage invariant is green against the full catalog,
+  all 25 demos mesh at CI resolution, thumbnails pass the drift test, and
+  the gallery ships the `math` section.
+
 ## Later — unscheduled candidates
 
 Each a deliberate future change, ordered by expected value; none block
@@ -306,4 +331,5 @@ Each a deliberate future change, ordered by expected value; none block
 Every Accepted ADR is implemented by at least one planned change:
 AD-001/016/021 (1), AD-004/008/013/014/015/019 (2, 3), AD-002/003/005/006/007/
 009/010/011/017/018 (3–5, 7), AD-012 (8), AD-020 (8), AD-028 (9, 10), AD-029
-(11). The showcase changes are deliberately outside the npm package (AD-028).
+(11), AD-030 (12). The showcase changes are deliberately outside the npm
+package (AD-028).

@@ -1,0 +1,57 @@
+import type { Libfive, Shape } from 'libfive-wasm';
+import type { DemoDefinition } from './types.js';
+
+/**
+ * One square column blank, twelve ways in two rows: taper, shear, per-axis
+ * and uniform scales, twists about every axis with and without the radius
+ * falloff, and the axis-twirl variants — all coordinate remaps of the same
+ * blank.
+ */
+const demo: DemoDefinition = {
+    meta: {
+        id: 'deformations',
+        title: 'Deformations',
+        description:
+            'A square column through twelve deformations: taper, shear, per-axis scales, twirls about every axis and the radius-free axis twirls.',
+        features: ['taperXY', 'shearXY', 'scaleXYZ', 'twirlX', 'twirlAxisZ'],
+        sections: ['transforms', 'math'],
+        region: {
+            min: [-2.05, -1.0, -0.95],
+            max: [2.05, 1.0, 0.95],
+        },
+        res: 14,
+    },
+
+    build(libfive: Libfive): Shape {
+        const blank = () => libfive.boxMitered([-0.2, -0.2, -0.75], [0.2, 0.2, 0.75]);
+
+        const backRow = [
+            blank().taperXY([0, 0], 0.75, 0.4, 1),
+            blank().taperXYZ([0, 0, 0], 0.75, 0.4, 1),
+            blank().shearXY([0, 0], 0.75, 0.28, 0),
+            blank().scaleX(0.45),
+            blank().scaleY(1.6),
+            blank().scaleZ(0.55),
+        ];
+        const frontRow = [
+            blank().scaleXYZ([1.1, 0.7, 0.9]),
+            blank().twirlX(1.0, 1.2),
+            blank().twirlY(1.0, 1.2),
+            blank().twirlAxisX(1.2, 3),
+            blank().twirlAxisY(1.2, 3),
+            blank().twirlAxisZ(1.2, 3),
+        ];
+
+        const columns = [-1.65, -0.99, -0.33, 0.33, 0.99, 1.65];
+        let scene: Shape | null = null;
+        const place = (shape: Shape, x: number, y: number): void => {
+            const station = shape.move([x, y, 0]);
+            scene = scene === null ? station : scene.union(station);
+        };
+        backRow.forEach((shape, i) => place(shape, columns[i]!, 0.55));
+        frontRow.forEach((shape, i) => place(shape, columns[i]!, -0.55));
+        return scene!;
+    },
+};
+
+export default demo;

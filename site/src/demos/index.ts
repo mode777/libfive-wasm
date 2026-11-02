@@ -1,8 +1,21 @@
 import blendedBlob from './blended-blob.js';
+import blendCatalog from './blend-catalog.js';
+import clockFace from './clock-face.js';
+import deformations from './deformations.js';
+import displacedPebble from './displaced-pebble.js';
+import enclosure from './enclosure.js';
+import evalInspection from './eval-inspection.js';
+import fieldMath from './field-math.js';
 import gyroidSurface from './gyroid-surface.js';
 import hollowFrame from './hollow-frame.js';
 import latticeCube from './lattice-cube.js';
+import legoBrick from './lego-brick.js';
 import loftTower from './loft-tower.js';
+import pillowBlock from './pillow-block.js';
+import primitivesZoo from './primitives-zoo.js';
+import rook from './rook.js';
+import screwThread from './screw-thread.js';
+import symmetryLab from './symmetry-lab.js';
 import polarGear from './polar-gear.js';
 import rawEscape from './raw-escape.js';
 import revolvedVase from './revolved-vase.js';
@@ -31,7 +44,20 @@ export const demos: readonly DemoEntry[] = [
     wavySlab,
     latticeCube,
     polarGear,
+    legoBrick,
+    enclosure,
+    pillowBlock,
+    clockFace,
+    rook,
+    screwThread,
+    displacedPebble,
     textBadge,
+    primitivesZoo,
+    blendCatalog,
+    symmetryLab,
+    deformations,
+    fieldMath,
+    evalInspection,
     rawEscape,
 ];
 

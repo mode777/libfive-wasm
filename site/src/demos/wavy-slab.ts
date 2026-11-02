@@ -12,7 +12,7 @@ const demo: DemoDefinition = {
         description:
             'A thin slab warped by a sine/cosine height field. Shows coordinate remapping and is a good target for the evaluation probe.',
         features: ['remap', 'sin', 'cos', 'box'],
-        sections: ['shapes', 'eval'],
+        sections: ['shapes', 'eval', 'math'],
         region: {
             min: [-2.2, -2.2, -1.2],
             max: [2.2, 2.2, 1.2],

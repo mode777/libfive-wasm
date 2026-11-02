@@ -6,6 +6,7 @@ export const SECTIONS = [
     'text',
     'arrays',
     'eval',
+    'math',
     'raw',
 ] as const;
 
@@ -18,5 +19,6 @@ export const SECTION_LABELS: Readonly<Record<Section, string>> = {
     text: 'Text',
     arrays: 'Arrays',
     eval: 'Eval',
+    math: 'Math',
     raw: 'Raw',
 };

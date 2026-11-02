@@ -1,6 +1,6 @@
 {
   "previewVersion": 1,
-  "capturedAt": "2026-11-02T10:10:06.164Z",
+  "capturedAt": "2026-11-02T16:06:21.079Z",
   "viewport": {
     "width": 640,
     "height": 400,
@@ -52,7 +52,7 @@
     },
     "wavy-slab": {
       "file": "wavy-slab.webp",
-      "sourceHash": "75eef3d3f8b77490c32a2edf2d7397122cfd08d8436fc24555db1f989b13222b",
+      "sourceHash": "87a9ccd113d71d05832a0935a6cb18a475ade234471e35aecbd00cbf766db948",
       "width": 1280,
       "height": 800
     },
@@ -68,9 +68,87 @@
       "width": 1280,
       "height": 800
     },
+    "lego-brick": {
+      "file": "lego-brick.webp",
+      "sourceHash": "ef64cc4762a8517948679462006ea6587cbe6d83f84035514853245260bc9a7b",
+      "width": 1280,
+      "height": 800
+    },
+    "enclosure": {
+      "file": "enclosure.webp",
+      "sourceHash": "e0e6dd4ef65b6df194bc26d5179e38b003bdd8d75c87b981d7ee27a4a9a9f972",
+      "width": 1280,
+      "height": 800
+    },
+    "pillow-block": {
+      "file": "pillow-block.webp",
+      "sourceHash": "26743d8bf1b80d89ee4df13e3ee6a83a6c807bcf3d6cd85e09a07b85cf471bab",
+      "width": 1280,
+      "height": 800
+    },
+    "clock-face": {
+      "file": "clock-face.webp",
+      "sourceHash": "5a043eab37752390a4120a89cc542c6a0fa78e99ee4b42f95cc10c93a8e26d61",
+      "width": 1280,
+      "height": 800
+    },
+    "rook": {
+      "file": "rook.webp",
+      "sourceHash": "4e79d521159f13ba09cf77f350a49166f2d966accd913ff32c5e274b51118fb0",
+      "width": 1280,
+      "height": 800
+    },
+    "screw-thread": {
+      "file": "screw-thread.webp",
+      "sourceHash": "d9577616ac4aa135bc796adc9466704849cef708bfbf7ddb97bb2a3500ce8adc",
+      "width": 1280,
+      "height": 800
+    },
+    "displaced-pebble": {
+      "file": "displaced-pebble.webp",
+      "sourceHash": "cb2bc2a3f02ea42cff15b0848f6d1627f3f124bc20aeaaa6882da7781a9bb440",
+      "width": 1280,
+      "height": 800
+    },
     "text-badge": {
       "file": "text-badge.webp",
-      "sourceHash": "f3bfda02178feb8d592f2647279833448e452a22e5adfb32f977d9e614677b73",
+      "sourceHash": "08a14f2fa6a182d6a521f45c765db545013fe34e348b80692ef4e581829334dd",
+      "width": 1280,
+      "height": 800
+    },
+    "primitives-zoo": {
+      "file": "primitives-zoo.webp",
+      "sourceHash": "d1af1690264d9befd8ec82864aebd2be8a25aea3fb3667812633e71c8cb83c32",
+      "width": 1280,
+      "height": 800
+    },
+    "blend-catalog": {
+      "file": "blend-catalog.webp",
+      "sourceHash": "722e1542bcb270dd6414e117749bbac2ba3126f3e93fc3cf24e7e119b17519ed",
+      "width": 1280,
+      "height": 800
+    },
+    "symmetry-lab": {
+      "file": "symmetry-lab.webp",
+      "sourceHash": "8b4794f70a999f0d003a8b9b2b385068d82acdc382c2481a1c56ed6daf38eec1",
+      "width": 1280,
+      "height": 800
+    },
+    "deformations": {
+      "file": "deformations.webp",
+      "sourceHash": "bf35d43d5668e99bb088b1ad0882127fafbc5e5ac18ad52c92f5a13c18f4ac5f",
+      "width": 1280,
+      "height": 800
+    },
+    "field-math": {
+      "file": "field-math.webp",
+      "sourceHash": "c636ea7a3ab6e318d264c6e8bc21ff92be7ed85373f31a6e3c0879442a05f331",
+      "width": 1280,
+      "height": 800
+    },
+    "eval-inspection": {
+      "file": "eval-inspection.webp",
+      "sourceHash": "c82f332d56a3f4471fc10d8ec222b8b67dffabfedf252aecb73c13b412472cb4",
       "width": 1280,
       "height": 800
     },

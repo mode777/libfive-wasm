@@ -46,6 +46,7 @@ Decisions marked 🔒 were explicitly locked with the maintainer on
 | AD-027 | Release procedure: changelog + version/tag gate, trusted-publishing prerequisite, post-publish registry/attestation and clean-install verification | Accepted |
 | AD-028 | Showcase site: a separate, non-published Vite app built from the locally linked package and deployed from the tested wasm artifact to GitHub Pages | Accepted |
 | AD-029 | User documentation: a docs section inside the showcase app (guides + TypeDoc-generated API reference through one markdown pipeline), tooling in `site/`, deployed with the showcase | Accepted |
+| AD-030 | Method-level demo coverage: every canonical convenience-surface method must appear as a real call site in some showcase demo, enforced in CI by source matching over the generated stdlib table | Accepted |
 
 ---
 
@@ -573,3 +574,44 @@ change audits and fills. Search, versioning, and a live playground stay out of
 scope. This implements AD-028 (the docs are part of that site) and supports
 AD-003/AD-005/AD-006/AD-009/AD-011 by documenting the behaviors those ADRs
 locked; it supersedes nothing.
+
+## AD-030 — Method-level demo coverage enforced by source matching {#ad-030}
+
+**Context.** The showcase gallery grew into the package's de-facto example
+set, but its coverage test only checked that each gallery *section* had at
+least one demo. Under that rule the twelve-demo catalog drifted into
+demonstrating roughly a third of the convenience surface: entire families
+(`repel`/`attract`, `reflect`/`symmetric`, `scale`, `taper`/`shear`,
+`shell`/`offset`, the exact box and rectangle primitives, the whole
+evaluation and inspection surface) had no demo at all, and nothing prevented
+further silent regression. Meanwhile every stdlib bump regenerates the
+surface mechanically (AD-017/AD-024), so the gap between "what the package
+offers" and "what the examples show" could only widen.
+
+**Decision.** The showcase test suite derives the canonical convenience
+surface programmatically — every generated stdlib function from the same
+`STDLIB_SPECS` table the bindings are built from, plus a literal,
+reviewable table of the `Shape` opcode/evaluation/inspection methods and the
+instance factories — and fails CI when any of them has no call site in some
+demo module's source. Matching runs over demo sources with comments and
+string literals stripped and `Math.*` calls removed (so `Math.pow` cannot
+cover `Shape.pow`), using word-boundary call patterns. Generated aliases
+install the same kernel shim as their target, so a call through an alias
+name covers the target. The invariant deliberately couples the package
+surface to the showcase: a stdlib bump that adds a function now requires a
+demo for it in the same change, keeping the example set honest by
+construction. Mesh/STL/raw plumbing stays outside this invariant — it is
+already exercised on every catalog entry by the showcase session tests.
+
+**Consequences.** "All features demonstrated" becomes a CI-checked property
+instead of an aspiration, and the gallery doubles as executable
+documentation for the whole surface. Costs: the matcher is heuristic and
+must be maintained against pathological spellings (word boundaries and
+`Math.*` stripping handle the known cases; failure messages name the
+uncovered method, so each new false positive is a one-line fix); and the
+coupling means a kernel addition without a showcase-ready demo blocks the
+release until one exists — accepted, because that is precisely the pressure
+the project wants. An allowlist escape hatch exists in principle but the
+catalog ships with zero entries. This implements AD-017 and AD-024 (the
+generated tables are the source of truth) and extends AD-028's showcase; it
+supersedes nothing.

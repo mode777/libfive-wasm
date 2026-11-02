@@ -57,7 +57,7 @@ Rules:
 
 - `id` is stable and kebab-case; demo routes are `#/p/<id>`.
 - `sections` must use the closed set in `src/demos/sections.ts`:
-  `csg`, `shapes`, `transforms`, `text`, `arrays`, `eval`, `raw`.
+  `csg`, `shapes`, `transforms`, `text`, `arrays`, `eval`, `math`, `raw`.
 - `res` follows the package semantics: it is the inverse of the minimum feature
   size, so larger is finer and slowness grows quickly.
 - The worker runs `build` off the main thread and owns the kernel objects.
@@ -88,6 +88,21 @@ snippet in metadata.
 root test fails if a section has no demo, if a demo declares an unknown section,
 or if any demo throws or meshes to empty/non-finite geometry. The gallery
 filter is generated from the same section set.
+
+Method-level coverage is enforced too (AD-030): root
+`tests/showcase-coverage.test.ts` derives the canonical surface — every
+generated stdlib function (aliases cover their targets), the `Shape`
+opcode/evaluation/inspection methods, and the instance factories — and fails
+CI naming any method with no call site in some demo module. Comments, string
+literals and `Math.*` calls are stripped before matching, so only real calls
+count. In practice: when you touch the demo catalog, run
+
+```sh
+npm test -- --run tests/showcase-coverage.test.ts
+```
+
+and when a stdlib bump adds functions (AD-017), add demos for them in the same
+change.
 
 ## Documentation
 

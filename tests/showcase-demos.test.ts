@@ -43,7 +43,7 @@ describe('showcase demo catalog', () => {
             }
             expect(typeof demo.build).toBe('function');
         }
-        expect(demos).toHaveLength(12);
+        expect(demos).toHaveLength(25);
     });
 
     it('covers every known section', () => {
