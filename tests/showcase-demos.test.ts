@@ -73,7 +73,76 @@ describe('showcase demo catalog', () => {
                 shape.free();
             }
         }, 60000);
+
+        const probes = demo.meta.probes;
+        if (probes) {
+            it(`${demo.meta.id} signature probes agree with the built shape`, () => {
+                const fmt = (p: readonly number[]): string =>
+                    `(${p.join(', ')})`;
+                const res = Math.max(4, Math.min(8, demo.meta.res));
+                const shape = demo.build(libfive);
+                const mesh = shape.mesh({ region: demo.meta.region, res });
+                try {
+                    // An empty mesh fails every inside probe (showcase-gallery).
+                    expect(
+                        mesh.triCount > 0,
+                        `${demo.meta.id} meshes to zero triangles`,
+                    ).toBe(true);
+                    for (const p of probes.inside ?? []) {
+                        const f = shape.evalF([...p]);
+                        expect(
+                            f < 0,
+                            `${demo.meta.id} inside probe ${fmt(p)} evaluates outside the solid (f=${f})`,
+                        ).toBe(true);
+                    }
+                    for (const p of probes.outside ?? []) {
+                        const f = shape.evalF([...p]);
+                        expect(
+                            f >= 0,
+                            `${demo.meta.id} outside probe ${fmt(p)} evaluates inside the solid (f=${f})`,
+                        ).toBe(true);
+                    }
+                } finally {
+                    mesh.free();
+                    shape.free();
+                }
+            }, 60000);
+        }
     }
+});
+
+describe('clock face dial quality', () => {
+    it('meshes at its declared resolution with resolved detail', () => {
+        const demo = demos.find((d) => d.meta.id === 'clock-face');
+        expect(demo, 'clock-face demo missing from the catalog').toBeDefined();
+        if (!demo) return;
+
+        const shape = demo.build(libfive);
+        const started = performance.now();
+        const mesh = shape.mesh({
+            region: demo.meta.region,
+            res: demo.meta.res,
+        });
+        const durationMs = performance.now() - started;
+        try {
+            // The kernel is deterministic: the healthy dial converges at
+            // res 30 (res 40 is byte-identical) to ~29.5k triangles. A
+            // large drop means engraved detail (numerals, ticks) stopped
+            // resolving; sliver fragmentation instead shows up as probe
+            // failures and in the gallery thumbnail, so this floor is one
+            // layer of three.
+            expect(mesh.triCount).toBeGreaterThanOrEqual(23000);
+            // Blow-up tripwire: healthy meshing takes well under a second;
+            // an accidental 4x res bump would exceed this.
+            expect(durationMs).toBeLessThan(30000);
+            console.info(
+                `clock-face @ res ${demo.meta.res}: ${mesh.triCount} triangles, ${mesh.vertCount} vertices, ${durationMs.toFixed(0)} ms`,
+            );
+        } finally {
+            mesh.free();
+            shape.free();
+        }
+    }, 60000);
 });
 
 describe('showcase mesh session', () => {

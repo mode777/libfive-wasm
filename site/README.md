@@ -44,6 +44,10 @@ const demo: DemoDefinition = {
         sections: ['csg', 'shapes'],
         region: { min: [-2, -2, -2], max: [2, 2, 2] },
         res: 14,
+        probes: {
+            inside: [[0, 0, 0]],
+            outside: [[0, 0, 1.5]],
+        },
     },
     build(libfive: Libfive): Shape {
         return libfive.sphere(1);
@@ -60,6 +64,12 @@ Rules:
   `csg`, `shapes`, `transforms`, `text`, `arrays`, `eval`, `math`, `raw`.
 - `res` follows the package semantics: it is the inverse of the minimum feature
   size, so larger is finer and slowness grows quickly.
+- `probes` is optional signature points in region coordinates: `inside` points
+  must evaluate inside the solid (negative `evalF`) and `outside` points must
+  evaluate outside it. The validation suite fails a demo whose probes disagree
+  with its built shape, so update probes in the same edit as the geometry.
+  Declare them for demos whose engraved, repeated or raised details are easy to
+  lose silently (numerals, ticks, thin raised parts).
 - The worker runs `build` off the main thread and owns the kernel objects.
   Demo modules must not import three.js, the DOM, or browser-only APIs: the root
   Node test imports them directly.

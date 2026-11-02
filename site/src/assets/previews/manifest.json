@@ -1,6 +1,6 @@
 {
   "previewVersion": 1,
-  "capturedAt": "2026-11-02T16:06:21.079Z",
+  "capturedAt": "2026-11-02T17:58:49.006Z",
   "viewport": {
     "width": 640,
     "height": 400,
@@ -88,7 +88,7 @@
     },
     "clock-face": {
       "file": "clock-face.webp",
-      "sourceHash": "5a043eab37752390a4120a89cc542c6a0fa78e99ee4b42f95cc10c93a8e26d61",
+      "sourceHash": "f24d1e6b45c8bf8c44ea8c285051595069190366075caaa173ebb0e06bf8c4eb",
       "width": 1280,
       "height": 800
     },
