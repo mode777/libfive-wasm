@@ -52,7 +52,7 @@
 
 ## 6. Deployment verification
 
-- [ ] 6.1 Commit and push to `main`; verify `build-wasm` and `pages.yml`
+- [x] 6.1 Commit and push to `main`; verify `build-wasm` and `pages.yml`
   succeed and deploy the new commit.
-- [ ] 6.2 Smoke-test the live gallery filter, one demo's inspector (wireframe,
+- [x] 6.2 Smoke-test the live gallery filter, one demo's inspector (wireframe,
   Scheme, probe) and STL download; record the live URL.
