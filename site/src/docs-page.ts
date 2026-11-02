@@ -2,7 +2,7 @@ import { docsNav, docsPages } from './docs/generated/content';
 import { el } from './dom';
 import { renderFooter, renderHeader } from './chrome';
 // Same code theme as the demo Code tab (see code-view.ts); Vite dedupes it.
-import 'highlight.js/styles/atom-one-dark.css';
+import 'highlight.js/styles/kimbie-dark.css';
 
 /**
  * The documentation section: a persistent sidebar plus either the landing

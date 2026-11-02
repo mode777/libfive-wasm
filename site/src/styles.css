@@ -9,7 +9,7 @@
     --accent: #b5522a;
     --accent-soft: #d08355;
     --card: rgba(255, 255, 255, 0.52);
-    --code: #16181d;
+    --code: #221a0f;
     --radius: 20px;
     --shadow: 0 30px 60px -42px rgba(55, 35, 18, 0.55);
     --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
@@ -510,20 +510,20 @@ a {
     justify-content: space-between;
     gap: 12px;
     padding: 10px 16px;
-    background: #101116;
+    background: #191307;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .code-filename {
     font-family: var(--mono);
     font-size: 11px;
-    color: #9aa1ad;
+    color: #b09a7d;
 }
 
 .code-copy {
     border: 1px solid rgba(255, 255, 255, 0.16);
     background: transparent;
-    color: #d9dee7;
+    color: #e8dcc8;
     border-radius: 999px;
     padding: 6px 10px;
     font-family: var(--mono);
@@ -548,6 +548,9 @@ a {
 
 .code-pre code {
     font: inherit;
+    /* Warm base matching the kimbie-dark theme, in case the theme's own
+       .hljs rule is ever missing (the dark-on-dark regression guard). */
+    color: #d3af86;
 }
 
 .code-pre code.hljs {
@@ -1241,6 +1244,8 @@ a {
     font: inherit;
     background: transparent;
     padding: 0;
+    /* Warm base matching the kimbie-dark theme (dark-on-dark guard). */
+    color: #d3af86;
 }
 
 .docs-prose pre code.hljs {

@@ -149,7 +149,7 @@ function createMarkdownRenderer(rewriteLinks) {
                     ? hljs.highlight(text, { language: hljsLanguage }).value
                     : hljs.highlight(text, { language: 'plaintext' }).value;
                 const shown = language === '' ? '' : ` class="language-${language}"`;
-                return `<pre><code${shown}>${body}</code></pre>\n`;
+                return `<pre><code class="hljs"${shown}>${body}</code></pre>\n`;
             },
         },
     });
