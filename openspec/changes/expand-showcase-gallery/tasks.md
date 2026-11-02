@@ -8,7 +8,7 @@
 
 - [x] 2.1 Prototype the `screw-thread` helix (spiral via `atan2` + `mod` on a `cylinderZ` blank) in a scratch vitest at CI resolution; confirm a non-empty mesh and sub-second mesh time before freezing its pitch/depth parameters (design D4).
 - [x] 2.2 Add `lego-brick` and `enclosure` demo modules with `demos/index.ts` and `demos/sources.ts` entries; bump the catalog pin in `tests/showcase-demos.test.ts` to the new count; verify each appears in the catalog and meshes non-empty via `npm test`.
-- [ ] 2.3 Add `pillow-block`, `clock-face` and `rook` demo modules; bump the pin; verify each meshes non-empty and the CI-resolution pass stays fast.
+- [x] 2.3 Add `pillow-block`, `clock-face` and `rook` demo modules; bump the pin; verify each meshes non-empty and the CI-resolution pass stays fast.
 - [x] 2.4 Add `screw-thread` (frozen parameters from 2.1) and `displaced-pebble` (full `repel`/`attract` family as labeled patches plus the pebble) modules; bump the pin; verify each meshes non-empty.
 
 ## 3. Feature-ladder demos
@@ -21,7 +21,7 @@
 ## 4. Method-level coverage invariant (AD-030)
 
 - [x] 4.1 Create `tests/showcase-coverage.test.ts`: derive the required surface from `STDLIB_SPECS` and the generated alias table in `src/gen/stdlib.ts` plus the literal `Shape`-method/factory table, strip comments and string literals, match call sites with word-boundary patterns, and assert full coverage across `site/src/demos/*.ts`; verify it passes against the finished catalog.
-- [ ] 4.2 Verify the invariant's failure modes with a local fixture (a method called nowhere, and a method mentioned only in a comment): the test names the uncovered method in both cases; remove the fixture afterwards and re-verify green.
+- [x] 4.2 Verify the invariant's failure modes with a local fixture (a method called nowhere, and a method mentioned only in a comment): the test names the uncovered method in both cases; remove the fixture afterwards and re-verify green.
 
 ## 5. Docs and ADR sync
 
