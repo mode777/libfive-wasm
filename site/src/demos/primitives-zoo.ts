@@ -30,7 +30,7 @@ const demo: DemoDefinition = {
             min: [-2.7, -1.5, -0.75],
             max: [2.7, 1.5, 0.95],
         },
-        res: 18,
+        res: 40,
     },
 
     build(libfive: Libfive): Shape {
