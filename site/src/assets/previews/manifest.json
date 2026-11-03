@@ -1,6 +1,6 @@
 {
   "previewVersion": 1,
-  "capturedAt": "2026-11-02T17:58:49.006Z",
+  "capturedAt": "2026-11-03T08:35:30.293Z",
   "viewport": {
     "width": 640,
     "height": 400,
@@ -82,7 +82,7 @@
     },
     "pillow-block": {
       "file": "pillow-block.webp",
-      "sourceHash": "26743d8bf1b80d89ee4df13e3ee6a83a6c807bcf3d6cd85e09a07b85cf471bab",
+      "sourceHash": "5effa33962898435039d316d89b3b3c097954c01cdd50223cd2aa3da7e7ed9f7",
       "width": 1280,
       "height": 800
     },
@@ -94,7 +94,7 @@
     },
     "rook": {
       "file": "rook.webp",
-      "sourceHash": "4e79d521159f13ba09cf77f350a49166f2d966accd913ff32c5e274b51118fb0",
+      "sourceHash": "401adb16e9451725db184befd3f9cc72649567ea73fc9f2d0307de61e45bce8c",
       "width": 1280,
       "height": 800
     },
@@ -118,31 +118,31 @@
     },
     "primitives-zoo": {
       "file": "primitives-zoo.webp",
-      "sourceHash": "d1af1690264d9befd8ec82864aebd2be8a25aea3fb3667812633e71c8cb83c32",
+      "sourceHash": "b941a0cb3877033e9cbf55f1119caad7748ea9c37bd3df1491abc86c9c40c0fd",
       "width": 1280,
       "height": 800
     },
     "blend-catalog": {
       "file": "blend-catalog.webp",
-      "sourceHash": "722e1542bcb270dd6414e117749bbac2ba3126f3e93fc3cf24e7e119b17519ed",
+      "sourceHash": "689e3e628ea566d92a0cc1e388c1326490930b98685d952ae6681d964a64cfdc",
       "width": 1280,
       "height": 800
     },
     "symmetry-lab": {
       "file": "symmetry-lab.webp",
-      "sourceHash": "8b4794f70a999f0d003a8b9b2b385068d82acdc382c2481a1c56ed6daf38eec1",
+      "sourceHash": "88289bd70e214025f2590f32bd272afaf5de284c4c896e248d1c24a148fb3bed",
       "width": 1280,
       "height": 800
     },
     "deformations": {
       "file": "deformations.webp",
-      "sourceHash": "bf35d43d5668e99bb088b1ad0882127fafbc5e5ac18ad52c92f5a13c18f4ac5f",
+      "sourceHash": "e71034920d0a0d527c1142809c10bae0f92d6a4bfbe4e8c8997cd1af5bc34c77",
       "width": 1280,
       "height": 800
     },
     "field-math": {
       "file": "field-math.webp",
-      "sourceHash": "c636ea7a3ab6e318d264c6e8bc21ff92be7ed85373f31a6e3c0879442a05f331",
+      "sourceHash": "b1101ef3bab46acd775dc693bae606778e7fec109f334398892d1c0e2dd7d2d7",
       "width": 1280,
       "height": 800
     },

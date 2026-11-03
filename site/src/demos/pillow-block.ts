@@ -13,38 +13,58 @@ const demo: DemoDefinition = {
         title: 'Pillow block',
         description:
             'A bearing pillow block: bolted base, vertical hub and a horizontal bore, with reflected side ribs and a symmetric bolt pattern.',
-        features: ['boxExact', 'symmetricX', 'reflectX', 'clearance'],
+        features: [
+            'boxExact',
+            'symmetricX',
+            'symmetricY',
+            'reflectX',
+            'clearance',
+        ],
         sections: ['shapes', 'transforms', 'arrays'],
         region: {
-            min: [-1.7, -1.1, -0.8],
-            max: [1.7, 1.1, 1.0],
+            min: [-1.75, -1.15, -0.8],
+            max: [1.75, 1.15, 1.15],
         },
-        res: 16,
+        res: 20,
     },
 
     build(libfive: Libfive): Shape {
-        const base = libfive.boxExact([-1.45, -0.95, -0.55], [1.45, 0.95, -0.15]);
-        const pillar = libfive.boxExact([-0.8, -0.6, -0.55], [0.8, 0.6, 0.3]);
-        const hub = libfive.cylinderZ(0.75, 1.3, [0, 0, 0.2]).rotateX(Math.PI / 2);
-        const bore = libfive.cylinderZ(0.42, 2.6, [0, 0, 0.2]).rotateX(Math.PI / 2);
+        const base = libfive.boxExact([-1.4, -0.9, -0.6], [1.4, 0.9, -0.2]);
+
+        // The hub axis is Y. cylinderZ's base is the bottom face centre, so
+        // the base y coordinate selects the world z of the axis and base z
+        // centres the length about y = 0 after the rotate.
+        const bore = libfive
+            .cylinderZ(0.34, 2.0, [0, 0.35, -1.0])
+            .rotateX(Math.PI / 2);
+        const hub = libfive
+            .cylinderZ(0.6, 1.1, [0, 0.35, -0.55])
+            .rotateX(Math.PI / 2)
+            .clearance(bore, 0.02);
+        const pedestal = libfive
+            .boxExact([-0.75, -0.55, -0.6], [0.75, 0.55, 0.3])
+            .clearance(bore, 0.02);
 
         // Mounting ribs: one modeled, its partner reflected to the far side.
-        const rib = libfive.boxMitered([0.8, -0.5, -0.55], [1.45, 0.5, -0.15]);
+        const rib = libfive.boxMitered([0.75, -0.5, -0.6], [1.4, 0.5, -0.15]);
         const ribs = rib.union(rib.reflectX());
 
         // Bolt holes: one corner hole mirrored into a symmetric 4-hole pattern.
-        const hole = libfive.cylinderZ(0.16, 0.9, [1.15, 0.62, -0.62]);
+        const hole = libfive.cylinderZ(0.14, 0.9, [1.15, 0.62, -0.65]);
         const holes = libfive.symmetricY(libfive.symmetricX(hole));
 
-        // A shallow counterbore seat kept clear of the bore (0.25 wall left).
-        const seat = libfive.cylinderZ(0.52, 1.6, [0, 0, 0.2]).rotateX(Math.PI / 2);
+        // Short counterbores at each end of the bearing bore.
+        const seat = libfive
+            .cylinderZ(0.44, 0.25, [0, 0.35, 0.3])
+            .union(libfive.cylinderZ(0.44, 0.25, [0, 0.35, -0.55]))
+            .rotateX(Math.PI / 2);
 
         return base
-            .union(pillar)
+            .union(pedestal)
             .union(hub)
             .union(ribs)
             .difference(holes)
-            .difference(seat.clearance(bore, 0.02));
+            .difference(seat);
     },
 };
 
