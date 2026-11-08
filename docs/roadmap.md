@@ -200,11 +200,12 @@ stdlib.
 - **Done when:** the published package installs and runs in a clean Node
   and browser project.
 
-**Current state:** the repository side is complete — `CHANGELOG.md`, version
-`0.1.0`, publishable manifest, tag/version gate and
-`scripts/verify-release.mjs`. The actual `v0.1.0` publish is pending the manual
-npm trusted-publishing setup (repository/workflow trust plus the `npm`
-environment) described in `docs/packaging.md`; no tag has been pushed.
+**Current state:** `libfive-wasm@0.1.0` was published from the annotated
+`v0.1.0` tag on 2026-11-08 through `publish-npm.yml` with OIDC trusted
+publishing and provenance. `node scripts/verify-release.mjs 0.1.0` passed:
+the registry reports the release integrity and provenance attestation, and a
+clean install meshes and exports STL. The post-release browser smoke (4.5)
+remains before the change is archived.
 
 ## Phase 6 — Showcase
 

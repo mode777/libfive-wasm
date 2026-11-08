@@ -89,7 +89,13 @@ CI runs it after the package suite.
    (OIDC)** — no `NPM_TOKEN`. The one manual prerequisite is configuring the
    npm package to trust this repository's publish workflow and the `npm`
    GitHub environment **on the npm side**. Until that exists, the publish step
-   fails with a trust/auth error; no tag should be pushed.
+   fails with a trust/auth error; no tag should be pushed. Because npm requires
+   the package to exist before a trusted publisher can be attached, the very
+   first release is bootstrapped with an authenticated placeholder
+   (`0.0.0-bootstrap.0`, tagged `bootstrap`, then unpublished); the trust
+   relationship is created immediately afterwards, and the real `v0.1.0` tag
+   is the first OIDC publish. npm expires an unvalidated trust configuration
+   after two days.
 4. Release checklist (first release: `0.1.0`):
    - confirm `build-wasm.yml` is green on `main` and the tree is reviewed;
    - update `CHANGELOG.md`, set `package.json` version, drop `private` and keep

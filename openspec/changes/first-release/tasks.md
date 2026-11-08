@@ -1,8 +1,9 @@
 # Tasks
 
-Tasks 1–3 and 4.1 are repository-side and can be completed in this change.
-Tasks 4.2–4.4 are the actual release and depend on the maintainer-side npm
-trusted-publishing setup; they stay unchecked until a maintainer performs them.
+Tasks 1–3 and 4.1 are repository-side and complete. Tasks 4.2–4.4 were
+performed for the `0.1.0` release (trusted publishing configured, `v0.1.0`
+tagged and published, registry/provenance verified). Task 4.5 remains before
+the change is archived.
 
 ## 1. Release record and manifest
 
@@ -52,13 +53,13 @@ trusted-publishing setup; they stay unchecked until a maintainer performs them.
   npm test && npm run test:package`, and
   `npx @fission-ai/openspec@latest validate --all --strict`. Verify: all exit
   zero.
-- [ ] 4.2 **(manual, maintainer)** Configure npm trusted publishing for this
+- [x] 4.2 **(manual, maintainer)** Configure npm trusted publishing for this
   repository/workflow and the `npm` environment on the npm side. Verify: the
   npm package settings show the trust relationship.
-- [ ] 4.3 Commit the release tree and create/push the annotated `v0.1.0` tag
+- [x] 4.3 Commit the release tree and create/push the annotated `v0.1.0` tag
   once 4.2 is complete. Verify: `git tag -n` shows `v0.1.0` on the release
   commit and `publish-npm.yml` runs.
-- [ ] 4.4 Verify the published release:
+- [x] 4.4 Verify the published release:
   `node scripts/verify-release.mjs 0.1.0`, then confirm `npm view
   libfive-wasm@0.1.0` and the provenance attestation. Verify: the script exits
   zero and its clean-project mesh/STL checks pass.
